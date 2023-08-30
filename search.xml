@@ -1,18 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title></title>
-    <url>/2023/08/29/hello-world/</url>
-    <content><![CDATA[<span id="more"></span>
+    <title>dll注入与session0注入</title>
+    <url>/2023/08/31/dll%E6%B3%A8%E5%85%A5%E4%B8%8Esession0%E6%B3%A8%E5%85%A5/</url>
+    <content><![CDATA[<center>本篇主要介绍传统的dll注入,反射dll以及利用内核API的session0注入</center>
 
-]]></content>
-  </entry>
-  <entry>
-    <title>dll注入与session_0注入</title>
-    <url>/2023/08/30/dll%E6%B3%A8%E5%85%A5%E4%B8%8Esession-0%E6%B3%A8%E5%85%A5/</url>
-    <content><![CDATA[]]></content>
+<span id="more"></span>
+
+<h1 id="dll注入"><a href="#dll注入" class="headerlink" title="dll注入"></a>dll注入</h1><p>所谓dll注入就是将一个dll(动态链接库)加载到要被注入的进程的内存空间，使其成为进程的一部分。</p>
+<h2 id="1-dll注入步骤"><a href="#1-dll注入步骤" class="headerlink" title="1.dll注入步骤"></a>1.dll注入步骤</h2><p>传统的dll注入大致可以分为以下几个步骤：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>所用API</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>打开要注入的进程</td>
+<td>OpenProcess</td>
+</tr>
+<tr>
+<td>在进程的内存中申请内存空间</td>
+<td>virtualAllocEx</td>
+</tr>
+<tr>
+<td>写入内存</td>
+<td>writeProcessMemory</td>
+</tr>
+<tr>
+<td>从kenrel32.dll中获取LoadLibrary</td>
+<td>GetProcAddress</td>
+</tr>
+<tr>
+<td>创建远程线程加载dll</td>
+<td>CreateRemoteThread</td>
+</tr>
+<tr>
+<td>等待线程函数结束</td>
+<td>WaitForSingleObject</td>
+</tr>
+<tr>
+<td>释放dll空间</td>
+<td>VirtualFreeEx</td>
+</tr>
+<tr>
+<td>关闭句柄</td>
+<td>CloseHandle</td>
+</tr>
+</tbody></table>
+<h2 id="2-代码实践"><a href="#2-代码实践" class="headerlink" title="2.代码实践"></a>2.代码实践</h2><h1 id="反射dll"><a href="#反射dll" class="headerlink" title="反射dll"></a>反射dll</h1>]]></content>
       <categories>
-        <category>免杀</category>
+        <category>免杀基础</category>
       </categories>
       <tags>
         <tag>免杀</tag>

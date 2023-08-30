@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="免杀," />
 
 
 
@@ -79,14 +79,17 @@
 
 
 
+<meta name="description" content="本篇主要介绍传统的dll注入,反射dll以及利用内核API的session0注入">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Etranfire&#39;s blog">
-<meta property="og:url" content="https://etranfire.github.io/2023/08/29/hello-world/index.html">
+<meta property="og:title" content="dll注入与session0注入">
+<meta property="og:url" content="https://etranfire.github.io/2023/08/31/dll%E6%B3%A8%E5%85%A5%E4%B8%8Esession0%E6%B3%A8%E5%85%A5/index.html">
 <meta property="og:site_name" content="Etranfire&#39;s blog">
+<meta property="og:description" content="本篇主要介绍传统的dll注入,反射dll以及利用内核API的session0注入">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-08-29T10:57:53.200Z">
-<meta property="article:modified_time" content="2023-08-30T10:04:55.361Z">
+<meta property="article:published_time" content="2023-08-30T19:55:35.000Z">
+<meta property="article:modified_time" content="2023-08-30T20:39:06.707Z">
 <meta property="article:author" content="Etranfire">
+<meta property="article:tag" content="免杀">
 <meta name="twitter:card" content="summary">
 
 
@@ -117,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="https://Etranfire.github.io/2023/08/29/hello-world/"/>
+  <link rel="canonical" href="https://Etranfire.github.io/2023/08/31/dll注入与session0注入/"/>
 
 
 
 
 
-  <title> | Etranfire's blog</title>
+  <title>dll注入与session0注入 | Etranfire's blog</title>
   
 
 
@@ -184,6 +187,16 @@
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
             Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
           </a>
         </li>
       
@@ -284,7 +297,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://Etranfire.github.io/2023/08/29/hello-world/">
+    <link itemprop="mainEntityOfPage" href="https://Etranfire.github.io/2023/08/31/dll%E6%B3%A8%E5%85%A5%E4%B8%8Esession0%E6%B3%A8%E5%85%A5/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -301,7 +314,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline"></h1>
+          <h1 class="post-title" itemprop="name headline">dll注入与session0注入</h1>
         
 
         <div class="post-meta">
@@ -313,8 +326,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2023-08-29T18:57:53+08:00">
-                2023-08-29
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2023-08-31T03:55:35+08:00">
+                2023-08-31
               </time>
             
 
@@ -324,6 +337,28 @@
           </span>
 
           
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%85%8D%E6%9D%80%E5%9F%BA%E7%A1%80/" itemprop="url" rel="index">
+                    <span itemprop="name">免杀基础</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -332,8 +367,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2023/08/29/hello-world/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count gitment-comments-count" data-xid="/2023/08/29/hello-world/" itemprop="commentsCount"></span>
+                <a href="/2023/08/31/dll%E6%B3%A8%E5%85%A5%E4%B8%8Esession0%E6%B3%A8%E5%85%A5/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count gitment-comments-count" data-xid="/2023/08/31/dll%E6%B3%A8%E5%85%A5%E4%B8%8Esession0%E6%B3%A8%E5%85%A5/" itemprop="commentsCount"></span>
                 </a>
               </span>
             
@@ -366,9 +401,53 @@
       
 
       
-        <span id="more"></span>
+        <center>本篇主要介绍传统的dll注入,反射dll以及利用内核API的session0注入</center>
 
+<span id="more"></span>
 
+<h1 id="dll注入"><a href="#dll注入" class="headerlink" title="dll注入"></a>dll注入</h1><p>所谓dll注入就是将一个dll(动态链接库)加载到要被注入的进程的内存空间，使其成为进程的一部分。</p>
+<h2 id="1-dll注入步骤"><a href="#1-dll注入步骤" class="headerlink" title="1.dll注入步骤"></a>1.dll注入步骤</h2><p>传统的dll注入大致可以分为以下几个步骤：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>所用API</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>打开要注入的进程</td>
+<td>OpenProcess</td>
+</tr>
+<tr>
+<td>在进程的内存中申请内存空间</td>
+<td>virtualAllocEx</td>
+</tr>
+<tr>
+<td>写入内存</td>
+<td>writeProcessMemory</td>
+</tr>
+<tr>
+<td>从kenrel32.dll中获取LoadLibrary</td>
+<td>GetProcAddress</td>
+</tr>
+<tr>
+<td>创建远程线程加载dll</td>
+<td>CreateRemoteThread</td>
+</tr>
+<tr>
+<td>等待线程函数结束</td>
+<td>WaitForSingleObject</td>
+</tr>
+<tr>
+<td>释放dll空间</td>
+<td>VirtualFreeEx</td>
+</tr>
+<tr>
+<td>关闭句柄</td>
+<td>CloseHandle</td>
+</tr>
+</tbody></table>
+<h2 id="2-代码实践"><a href="#2-代码实践" class="headerlink" title="2.代码实践"></a>2.代码实践</h2><h1 id="反射dll"><a href="#反射dll" class="headerlink" title="反射dll"></a>反射dll</h1>
       
     </div>
     
@@ -383,27 +462,17 @@
 
     <footer class="post-footer">
       
-
-      
-      
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2023/08/30/dll%E6%B3%A8%E5%85%A5%E4%B8%8Esession-0%E6%B3%A8%E5%85%A5/" rel="prev" title="dll注入与session_0注入">
-                dll注入与session_0注入 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
+        <div class="post-tags">
+          
+            <a href="/tags/%E5%85%8D%E6%9D%80/" rel="tag"># 免杀</a>
+          
         </div>
+      
+
+      
+      
+      
+
       
 
       
@@ -459,8 +528,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -479,7 +557,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">1</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -525,6 +603,22 @@
       </section>
 
       
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#dll%E6%B3%A8%E5%85%A5"><span class="nav-number">1.</span> <span class="nav-text">dll注入</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-dll%E6%B3%A8%E5%85%A5%E6%AD%A5%E9%AA%A4"><span class="nav-number">1.1.</span> <span class="nav-text">1.dll注入步骤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%BB%A3%E7%A0%81%E5%AE%9E%E8%B7%B5"><span class="nav-number">1.2.</span> <span class="nav-text">2.代码实践</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%8D%E5%B0%84dll"><span class="nav-number">2.</span> <span class="nav-text">反射dll</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
 
       
 
@@ -538,12 +632,13 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2023</span>
+        <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
   <span class="author" itemprop="copyrightHolder">Etranfire</span>
-
+<!--
   
 </div>
 
@@ -560,10 +655,19 @@
 
 
 
+-->
+<div></div>
+<span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+</span>
+|
+<span id="busuanzi_container_page_pv">
+  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+</span>
 
         
 <div class="busuanzi-count">
-  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <script async src=”https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
   
     <span class="site-uv">
