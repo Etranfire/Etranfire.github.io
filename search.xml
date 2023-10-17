@@ -264,4 +264,99 @@
         <tag>免杀</tag>
       </tags>
   </entry>
+  <entry>
+    <title>初试SSDT hook</title>
+    <url>/2023/10/16/%E5%88%9D%E8%AF%95SSDT-hook/</url>
+    <content><![CDATA[<p>SSDT hook是杀毒软件常用的检测目标程序是否调用敏感Windows API，从而识别出木马病毒的手段，因为x64版本的Windows操作系统开启了PatchGuard保护，使得SSDT hook变得异常困难，于是本篇将以Windows xp为例，展示SSDT hook的魅力。下面就让我们看看什么是SSDT表。</p>
+<span id="more"></span>
+
+<h1 id="追踪SSDT表"><a href="#追踪SSDT表" class="headerlink" title="追踪SSDT表"></a>追踪SSDT表</h1><p>SSDT是一张表，即系统服务描述符表，用于处理应用层通过<strong>Kernel32.dll</strong>下发的各个API操作请求。下面我们使用windbg跟踪来介绍SSDT表。</p>
+<p>首先输入以下命令，</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">kd&gt; dd KeServiceDescriptorTable</span><br></pre></td></tr></table></figure>
+
+<p>得到结果如图所示</p>
+<p><img src="/images/%E5%88%9D%E8%AF%95SSDT-hook/image-20231016215013757.png" alt="image-20231016215013757"></p>
+<p>第一个参数指向的地址存储的是全部的内核函数(80501b8c)。</p>
+<p>第二个参数代表ssdt表里面有多少个内核函数(0x11c)。</p>
+<p>第三个参数是一个指针指向一个地址，这里表示的是与上面的内核函数相对应的参数个数，例如第一个为0x18，参数个数就为0x18&#x2F;4 &#x3D; 6</p>
+<h2 id="SSDT中的一个例子"><a href="#SSDT中的一个例子" class="headerlink" title="SSDT中的一个例子"></a>SSDT中的一个例子</h2><p>以OpenProcess为例。这里找一下 OpenProcess 在SSDT表的索引，首先bp OpenProcess</p>
+<p><img src="/images/%E5%88%9D%E8%AF%95SSDT-hook/image-20231016203348136.png" alt="image-20231016203348136"></p>
+<p>断在了 kerner32.OpenProcess ，这里 OpenProcess 会调用ntdll里面的 ZwOpenProcess 进入ring0， 在ring0 ZwOpenProcess 又会调用 NtOpenProcess。</p>
+<p><img src="/images/%E5%88%9D%E8%AF%95SSDT-hook/image-20231016204050145.png" alt="image-20231016204050145"></p>
+<p>跟随进去发现<code>mov eax,0x7A</code>，那么这里 ZwOpenProcess 的索引就为0x7A。</p>
+<p><img src="/images/%E5%88%9D%E8%AF%95SSDT-hook/image-20231016204328213.png" alt="image-20231016204328213"></p>
+<p>然后通过 KeServiceDescriptorTable 找到所有的内核函数，通过内核函数+偏移找到 OpenProcess 函数。</p>
+<p><img src="/images/%E5%88%9D%E8%AF%95SSDT-hook/image-20231016215037136.png" alt="image-20231016215037136"></p>
+<p>在 NT 4.0 以上的 Windows 操作系统中，默认就存在两个系统服务描述表，这两个调度表对应了两类不同的系统服务，这两个调度表为： KeServiceDescriptorTable 和 KeServiceDescriptorTableShadow ，其中 KeServiceDescriptorTable 主要是处理来自 ring3 。kernel32.dll 中的系统调用，而 KeServiceDescriptorTableShadow 则主要处理来自 User32.dll 和 GDI32.dll 中的系统调用，并且KeServiceDescriptorTable 在 ntoskrnl.exe 是导出的，而KeServiceDescriptorTableShadow 则是没有被 Windows 操作系统所导出。</p>
+<p><strong>关于 SSDT 的全部内容则都是通过 KeServiceDescriptorTable 来完成的</strong></p>
+<h2 id="SSDT表的结构"><a href="#SSDT表的结构" class="headerlink" title="SSDT表的结构"></a>SSDT表的结构</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef struct _KSERVICE_TABLE_DESCRIPTOR &#123; </span><br><span class="line">KSYSTEM_SERVICE_TABLE ntoskrnl; // ntoskrnl.exe 的服务函数 </span><br><span class="line">KSYSTEM_SERVICE_TABLE win32k; // win32k.sys 的服务函数(GDI32.dll/User32.dll 的 内核支持) </span><br><span class="line">KSYSTEM_SERVICE_TABLE notUsed1; </span><br><span class="line">KSYSTEM_SERVICE_TABLE notUsed2; </span><br><span class="line">&#125; KSERVICE_TABLE_DESCRIPTOR, * PKSERVICE_TABLE_DESCRIPTOR;</span><br></pre></td></tr></table></figure>
+
+<p>其中每一项又是一个结构体 KSYSTEM_SERVICE_TABLE ，通过结构体表示为如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">typedef struct _KSYSTEM_SERVICE_TABLE &#123; </span><br><span class="line">PULONG ServiceTableBase; // SSDT (System Service Dispatch Table)的基地址 </span><br><span class="line">PULONG ServiceCounterTableBase; // 用于 checked builds, 包含 SSDT 中每个服务被调用的次数</span><br><span class="line">ULONG NumberOfService; // 服务函数的个数, NumberOfService * 4 就是整个地址表的大小</span><br><span class="line">ULONG ParamTableBase; // SSPT(System Service Parameter Table)的基地址 </span><br><span class="line">&#125; KSYSTEM_SERVICE_TABLE, * PKSYSTEM_SERVICE_TABLE;</span><br></pre></td></tr></table></figure>
+
+<p>SSDT表大致介绍到这里，但是要实现SSDT hook还需要另一块知识，系统调用。</p>
+<h1 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h1><h2 id="KUSER-SHARED-DATA"><a href="#KUSER-SHARED-DATA" class="headerlink" title="_KUSER_SHARED_DATA"></a>_KUSER_SHARED_DATA</h2><p>在 User 层和 Kernel 层分别定义了一个 _KUSER_SHARED_DATA 结构区域，用于 User 层和 Kernel 层共享某些数据，它们使用固定的地址值映射， _KUSER_SHARED_DATA 结构区域在 User 和 Kernel 层地址分别为</p>
+<p><strong>User 层地址为：0x7ffe0000</strong></p>
+<p><strong>Kernel 层地址为：0xffdf0000</strong></p>
+<p>先来看一下ring0，首先用<code>kd&gt; dt _KUSER_SHARED_DATA 0xffdf0000</code></p>
+<p><img src="/images/%E5%88%9D%E8%AF%95SSDT-hook/image-20231016215300616.png" alt="image-20231016215300616"></p>
+<p>接着是用户层</p>
+<p><img src="/images/%E5%88%9D%E8%AF%95SSDT-hook/image-20231016215447701.png" alt="image-20231016215447701"></p>
+<p>用户层和内核层的_KUSER_SHARED_DATA物理页是相同的，虽然指向的是同一个物理页，但在 User 层是只读的，在 Kernel 层是可写的。</p>
+<h2 id="CR3寄存器"><a href="#CR3寄存器" class="headerlink" title="CR3寄存器"></a>CR3寄存器</h2><p>CR3是一个寄存器，该寄存器内保存有页目录表物理地址，其实CR3内部存放的就是页目录表的内存基地址，运用CR3切换可实现对特定进程内存地址的强制读写操作。</p>
+<p>Cr3寄存器不同于其他寄存器，在所有的寄存器中，只有Cr3寄存器存储的地址是物理地址，其他寄存器存储的都是线性地址。</p>
+<p>Cr3寄存器所存储的物理地址指向了一个页目录表（Page-Directory Table，PDT），也就是所查找时的第一级。在Windows中，一个页的大小通常为4KB，即一个页（页目录表）可以存储1024个页目录表项（PDE）而第二级为页表(PTT)， 每个页表的大小为4KB，即一个页表可以存储1024个页表项（PTE）。</p>
+<p><img src="/images/%E5%88%9D%E8%AF%95SSDT-hook/20161002130508241#pic_center.png" alt="img"></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">PDE 结构</span><br><span class="line">|&lt;------ 31~12------&gt;|&lt;------ 11~0 ---------&gt;| 比特</span><br><span class="line">                     |b a 9 8 7 6 5 4 3 2 1 0| </span><br><span class="line">|--------------------|-|-|-|-|-|-|-|-|-|-|-|-| 占位</span><br><span class="line">|&lt;-------index------&gt;| AVL |G|P|0|A|P|P|U|R|P| 属性</span><br><span class="line">                             |S|   |C|W|/|/|</span><br><span class="line">                                   |D|T|S|W|</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">PTE 结构</span><br><span class="line">|&lt;------ 31~12------&gt;|&lt;------ 11~0 ---------&gt;| 比特</span><br><span class="line">                     |b a 9 8 7 6 5 4 3 2 1 0|</span><br><span class="line">|--------------------|-|-|-|-|-|-|-|-|-|-|-|-| 占位</span><br><span class="line">|&lt;-------index------&gt;| AVL |G|P|D|A|P|P|U|R|P| 属性</span><br><span class="line">                             |A|   |C|W|/|/|</span><br><span class="line">                             |T|   |D|T|S|W|</span><br></pre></td></tr></table></figure>
+
+<p>这个地方当P位为1时，其物理页才有效，R&#x2F;W为可读可写位，当值为1则证明属性为可读可写，U&#x2F;S位表示特权位，U&#x2F;S &#x3D; 0为特权用户，U&#x2F;S &#x3D; 1为普通用户。</p>
+<h2 id="如何判断是否支持系统调用"><a href="#如何判断是否支持系统调用" class="headerlink" title="如何判断是否支持系统调用"></a>如何判断是否支持系统调用</h2><p>当通过 eax&#x3D;1 来执行 cpuid 指令时，处理器的特征信息被放在ecx和edx寄存器中，其中 edx 包含了一个 SEP 位（11位），该位指明了当前处理器是否支持 sysenter&#x2F;sysexit 指令。<strong>支持函数用系统调用会使用ntdll.dll!KiFastSystemCall()不支持则使ntdll.dll!KiIntSystemCall()。</strong></p>
+<p>在我们了解了 KUSER_SHARED_DATA 结构体后，就可以知道call的实际上是 Systemcall 的地址，通过反汇编查看，通过 sysenter 指令（快速调用）进入0环。操作系统会在系统启动的时候在KUSER_SHARED_DATA 结构体的+300的位置，写入一个函数，这个函数就是 KiFastSystemCall 或者KiIntSystemCall 。</p>
+<h3 id="进入0环"><a href="#进入0环" class="headerlink" title="进入0环"></a>进入0环</h3><p>进0环需要更改CS、SS、ESP、EIP四个寄存器。</p>
+<p><strong>CS的权限由3变为0 意味着需要新的CS</strong></p>
+<p><strong>SS与CS的权限永远一致 需要新的SS</strong></p>
+<p><strong>权限发生切换的时候，堆栈也一定会切换，需要新的ESP</strong></p>
+<p><strong>进0环后代码的位置，需要EIP</strong></p>
+<p>如果使用中断门通过 0x2E 的中断号最终进入了 KiSystemService 这个内核模块。使用过sysenter，即快速调用进入内核。中断门进0环，需要的CS、EIP在IDT表中，需要查内存(SS与ESP由TSS提供)。而CPU如果支持sysenter指令时，操作系统会提前将CS&#x2F;SS&#x2F;ESP&#x2F;EIP的值存储在MSR寄存器中，sysenter指令执行时，CPU会将MSR寄存器中的值直接写入相关寄存器，没有读内存的过程，所以叫快速调用，本质是一样的。</p>
+<table>
+<thead>
+<tr>
+<th>API通过中断门进0环</th>
+<th>API通过sysenter指令进0环</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>(1)固定中断号为0x2E，(2)CS&#x2F;EIP由门描述符提供 ESP&#x2F;SS由TSS提供，(3)进入0环后执行的内核函数：NT!KiSystemService。</td>
+<td>(1)CS&#x2F;ESP&#x2F;EIP由MSR寄存器提供(SS是算出来的)。(2)进入0环后执行的内核函数：NT!KiFastCallEntry</td>
+</tr>
+</tbody></table>
+<h1 id="SSDT-hook"><a href="#SSDT-hook" class="headerlink" title="SSDT hook"></a>SSDT hook</h1><p>现在可以步入正题，介绍SSDT hook了。</p>
+<h2 id="使用CR4寄存器判断分页模式"><a href="#使用CR4寄存器判断分页模式" class="headerlink" title="使用CR4寄存器判断分页模式"></a>使用CR4寄存器判断分页模式</h2><p>这里函数准备好以后，就要将该函数的指针覆盖原来 NtOpenProcess 的指针，但是需要注意的是：自己改自己的代码是不用管权限的，改别人的代码很有可能这块内存是只读的，并不可写。那么本质上就是SSDT对应的物理页是只读的，这里有两种办法，我们都知道物理页的内存R&#x2F;W位的属性是由PDE和PTE相与而来的，那么我们就可以改变SSDT对应的PDE和PTE的R&#x2F;W属性，将物理页设置为可读可写的。通过CR4寄存器判断是2-9-9-12分页还是10-10-12分页。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">if(RCR4 &amp; 0x00000020) &#123;//说明是2-9-9-12分页 </span><br><span class="line">KdPrint((&quot;2-9-9-12分页 %p\n&quot;,RCR4));</span><br><span class="line">KdPrint((&quot;PTE1 %p\n&quot;,*(DWORD*)(0xC0000000 + ((HookFunAddr &gt;&gt; 9) &amp;0x007FFFF8))));</span><br><span class="line">*(DWORD64*)(0xC0000000 + ((HookFunAddr &gt;&gt; 9) &amp; 0x007FFFF8)) |= 0x02;</span><br><span class="line">KdPrint((&quot;PTE1 %p\n&quot;,*(DWORD*)(0xC0000000 + ((HookFunAddr &gt;&gt; 9) &amp;0x007FFFF8))));</span><br><span class="line">&#125;else &#123;//说明是10-10-12分页 </span><br><span class="line">KdPrint((&quot;10-10-12分页\n&quot;)); </span><br><span class="line">KdPrint((&quot;PTE1 %p\n&quot;,*(DWORD*)(0xC0000000 + ((HookFunAddr &gt;&gt; 10) &amp; 0x003FFFFC))));</span><br><span class="line">*(DWORD*)(0xC0000000 + ((HookFunAddr &gt;&gt; 10) &amp; 0x003FFFFC)) |= 0x02;</span><br><span class="line">KdPrint((&quot;PTE2 %p\n&quot;,*(DWORD*)(0xC0000000 + ((HookFunAddr &gt;&gt; 10) &amp;0x003FFFFC)))); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用CR0寄存器使内存有写入权限"><a href="#使用CR0寄存器使内存有写入权限" class="headerlink" title="使用CR0寄存器使内存有写入权限"></a>使用CR0寄存器使内存有写入权限</h2><p>使用 PsGetCurrentThread() 函数可获取当前 KTHREAD 的首地址但是需要注意的是SSDT表所在的内存页属性是只读，没有写入的权限，所以需要把该地址设置为可写入，这样才能写入自己的函数，使用的是CR0寄存器关闭只读属性。</p>
+<p><img src="/images/%E5%88%9D%E8%AF%95SSDT-hook/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1paSGluY2x1ZGU=,size_16,color_FFFFFF,t_70#pic_center.png" alt="img"></p>
+<p>可以看到这里使用32位寄存器，而在CR0寄存器中，重点关注的是3个标志位：</p>
+<p>PE ：是否启用保护模式，置1则启用。</p>
+<p>PG ：是否使用分页模式，置1则开启分页模式, 此标志置1时，PE 标志也必须置1，否则CPU报异常。</p>
+<p>WP： 为1时，不能修改只读的内存页，WP为0时，可以修改只读的内存页。</p>
+<p>所以在进行hook时，只要把CR0寄存器中的WP位置为0，就能对内存进行写入操作。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">//关闭页只读保护 </span><br><span class="line">__asm&#123;</span><br><span class="line">	push eax;</span><br><span class="line">	mov eax, cr0;</span><br><span class="line">	and eax, ~0x10000; // 与0x10000相与后取反</span><br><span class="line">	mov cr0, eax;</span><br><span class="line">	pop eax; </span><br><span class="line">	ret; </span><br><span class="line">&#125; </span><br><span class="line">//开启页只读保护 </span><br><span class="line">__asm&#123; </span><br><span class="line">	push eax;</span><br><span class="line">	mov eax, cr0; </span><br><span class="line">	or eax, 0x10000;</span><br><span class="line">	mov cr0, eax;</span><br><span class="line">	pop eax;</span><br><span class="line">	ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>现在可以编写实现代码了。</p>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><p>本代码目的是要监测进程强杀的恶意程序，所以我们最好来监测ZwOpenProcess而非TermialProcess，因为终止程序并非只有TerminalProcess还有用TerminalThread终止所有进程。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">#include &lt;ntddk.h&gt;</span><br><span class="line">#include &lt;ntstatus.h&gt;</span><br><span class="line">// 记录原函数的地址 </span><br><span class="line">ULONG uOldNtOpenProcess; </span><br><span class="line">//内核之SSDT-HOOK</span><br><span class="line">//系统服务表 </span><br><span class="line">typedef struct _KSYSTEM_SERVICE_TABLE &#123;</span><br><span class="line">PULONG ServiceTableBase; //函数地址表的首地址</span><br><span class="line">PULONG ServiceCounterTableBase;//函数表中每个函数被调用的次数 </span><br><span class="line">ULONG NumberOfService; //服务函数的个数 </span><br><span class="line">ULONG ParamTableBase; //参数个数表首地址</span><br><span class="line">&#125;KSYSTEM_SERVICE_TABLE, *PKSYSTEM_SERVICE_TABLE; </span><br><span class="line">//服务描述符 </span><br><span class="line">typedef struct _KSERVICE_TABLE_DESCRIPTOR &#123;</span><br><span class="line">	KSYSTEM_SERVICE_TABLE ntoskrnl;//ntoskrnl.exe的服务函数,SSDT</span><br><span class="line">	KSYSTEM_SERVICE_TABLE win32k; //win32k.sys的服务函数,ShadowSSDT</span><br><span class="line">	KSYSTEM_SERVICE_TABLE notUsed1;//暂时没用1</span><br><span class="line">	KSYSTEM_SERVICE_TABLE notUsed2;//暂时没用2 </span><br><span class="line">&#125;KSERVICE_TABLE_DESCRIPTOR, *PKSERVICE_TABLE_DESCRIPTOR; </span><br><span class="line">//定义HOOK的函数的类型 </span><br><span class="line">typedef NTSTATUS(NTAPI* FuZwOpenProcess)( </span><br><span class="line">	_Out_ PHANDLE ProcessHandle, </span><br><span class="line">	_In_ ACCESS_MASK DesiredAccess,</span><br><span class="line">	_In_ POBJECT_ATTRIBUTES ObjectAttributes,</span><br><span class="line">	_In_opt_ PCLIENT_ID ClientId </span><br><span class="line">	); </span><br><span class="line">//自写的函数声明 </span><br><span class="line">NTSTATUS NTAPI MyZwOpenProcess(</span><br><span class="line">	_Out_ PHANDLE ProcessHandle, </span><br><span class="line">	_In_ ACCESS_MASK DesiredAccess,</span><br><span class="line">	_In_ POBJECT_ATTRIBUTES ObjectAttributes,</span><br><span class="line">	_In_opt_ PCLIENT_ID ClientId</span><br><span class="line">);</span><br><span class="line">// KeServiceDescriptorTable 为 ntoskrnl.exe 所导出的全局变量 </span><br><span class="line">extern PKSERVICE_TABLE_DESCRIPTOR KeServiceDescriptorTable;</span><br><span class="line">//记录系统的该函数 </span><br><span class="line">FuZwOpenProcess g_OldZwOpenProcess; </span><br><span class="line">//服务描述符表指针</span><br><span class="line">KSERVICE_TABLE_DESCRIPTOR* g_pServiceTable = NULL; </span><br><span class="line">//要保护进程的ID</span><br><span class="line">ULONG g_Pid = 1324; </span><br><span class="line">//安装钩子</span><br><span class="line">NTSTATUS HookNtOpenProcess(); </span><br><span class="line">//卸载钩子 </span><br><span class="line">NTSTATUS UnHookNtOpenProcess(); </span><br><span class="line">//关闭页写入保护 </span><br><span class="line">void ShutPageProtect(); </span><br><span class="line">//开启页写入保护</span><br><span class="line">void OpenPageProtect(); </span><br><span class="line">//卸载驱动 </span><br><span class="line">void DriverUnload(DRIVER_OBJECT* obj);  </span><br><span class="line">NTSTATUS DriverEntry(DRIVER_OBJECT* driver, UNICODE_STRING* path) &#123;</span><br><span class="line">KdPrint((&quot;驱动启动成功！\n&quot;)); </span><br><span class="line">//安装钩子 </span><br><span class="line">HookNtOpenProcess();</span><br><span class="line">driver-&gt;DriverUnload = DriverUnload;</span><br><span class="line">return STATUS_SUCCESS;</span><br><span class="line">&#125;</span><br><span class="line">//卸载驱动</span><br><span class="line">void DriverUnload(DRIVER_OBJECT* obj) &#123;</span><br><span class="line">	//卸载钩子</span><br><span class="line">	UnHookNtOpenProcess(); </span><br><span class="line">	KdPrint((&quot;驱动卸载成功！\n&quot;)); </span><br><span class="line">&#125;</span><br><span class="line">NTSTATUS HookNtOpenProcess() &#123; </span><br><span class="line">	NTSTATUS Status; Status = STATUS_SUCCESS; </span><br><span class="line">	//1.关闭页只读保护</span><br><span class="line">	ShutPageProtect(); </span><br><span class="line">	//2.修改SSDT表 </span><br><span class="line">	uOldNtOpenProcess = KeServiceDescriptorTable-&gt;ntoskrnl.ServiceTableBase[0x7a];</span><br><span class="line">	KeServiceDescriptorTable-&gt;ntoskrnl.ServiceTableBase[0x7a] = (ULONG)MyZwOpenProcess;</span><br><span class="line">	//3.开启页只读保护 </span><br><span class="line">	OpenPageProtect(); </span><br><span class="line">	return Status; </span><br><span class="line">&#125;</span><br><span class="line">//卸载钩子</span><br><span class="line">NTSTATUS UnHookNtOpenProcess() &#123;</span><br><span class="line">	NTSTATUS status; status = STATUS_SUCCESS; </span><br><span class="line">	//1.关闭页只读保护</span><br><span class="line">	ShutPageProtect(); </span><br><span class="line">	//2.写入原来的函数到SSDT表内</span><br><span class="line">	KeServiceDescriptorTable-&gt;ntoskrnl.ServiceTableBase[0x7a] = uOldNtOpenProcess;</span><br><span class="line">	//3.开启页只读保护</span><br><span class="line">	OpenPageProtect();</span><br><span class="line">	return status;</span><br><span class="line">&#125;</span><br><span class="line">//关闭页只读保护</span><br><span class="line">void _declspec(naked) ShutPageProtect() &#123;</span><br><span class="line"></span><br><span class="line">	__asm &#123;</span><br><span class="line">		push eax; </span><br><span class="line">		mov eax, cr0;</span><br><span class="line">		and eax, ~0x10000;</span><br><span class="line">		mov cr0, eax; </span><br><span class="line">		pop eax; </span><br><span class="line">		ret; </span><br><span class="line">	&#125; </span><br><span class="line">&#125;</span><br><span class="line">//开启页只读保护</span><br><span class="line">void _declspec(naked) OpenPageProtect() &#123;</span><br><span class="line">	__asm &#123;</span><br><span class="line">		push eax;</span><br><span class="line">		mov eax, cr0; </span><br><span class="line">		or eax, 0x10000;</span><br><span class="line">		mov cr0, eax;</span><br><span class="line">		pop eax; </span><br><span class="line">		ret; </span><br><span class="line">	&#125; </span><br><span class="line">&#125;</span><br><span class="line">//自写的函数 </span><br><span class="line">NTSTATUS NTAPI MyZwOpenProcess( </span><br><span class="line">	_Out_ PHANDLE ProcessHandle,</span><br><span class="line">	_In_ ACCESS_MASK DesiredAccess,</span><br><span class="line">	_In_ POBJECT_ATTRIBUTES ObjectAttributes,</span><br><span class="line">	_In_opt_ PCLIENT_ID ClientId</span><br><span class="line">)&#123;</span><br><span class="line">	//当此进程为要保护的进程时</span><br><span class="line">	if (ClientId-&gt;UniqueProcess == (HANDLE)g_Pid) &#123; </span><br><span class="line">		//设为拒绝访问</span><br><span class="line">		 DesiredAccess = 0;</span><br><span class="line">	&#125;</span><br><span class="line">//调用原函数</span><br><span class="line">	return NtOpenProcess(ProcessHandle,DesiredAccess,ObjectAttributes,ClientId);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="执行结果"><a href="#执行结果" class="headerlink" title="执行结果"></a>执行结果</h2><p><img src="/images/%E5%88%9D%E8%AF%95SSDT-hook/image-20231017114927446.png" alt="image-20231017114927446"></p>
+<p>可以看到PCHunker中的Ring0 Hooks已经检测到NtOpenProcess地址被篡改，代码执行成功。</p>
+]]></content>
+      <categories>
+        <category>免杀基础</category>
+      </categories>
+      <tags>
+        <tag>免杀</tag>
+      </tags>
+  </entry>
 </search>
