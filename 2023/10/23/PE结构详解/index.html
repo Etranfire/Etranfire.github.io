@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="免杀," />
+  <meta name="keywords" content="Windows,基础知识," />
 
 
 
@@ -79,21 +79,22 @@
 
 
 
-<meta name="description" content="APC即异步过程调用，是指函数在特定线程中被异步执行，在操作系统中，APC是一种并发机制。由于线程是不能被杀掉，挂起，恢复的，线程在执行时会占据CPU，而APC注入可以改变一个线程的行为，可用于DLL注入。">
+<meta name="description" content="PE结构是windows的可执行文件结构，学习PE结构有助于为后面的软件安全的学习打下基础。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="APC注入">
-<meta property="og:url" content="https://etranfire.github.io/2023/09/12/APC%E6%B3%A8%E5%85%A5/index.html">
+<meta property="og:title" content="PE结构详解">
+<meta property="og:url" content="https://etranfire.github.io/2023/10/23/PE%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3/index.html">
 <meta property="og:site_name" content="Etranfire&#39;s blog">
-<meta property="og:description" content="APC即异步过程调用，是指函数在特定线程中被异步执行，在操作系统中，APC是一种并发机制。由于线程是不能被杀掉，挂起，恢复的，线程在执行时会占据CPU，而APC注入可以改变一个线程的行为，可用于DLL注入。">
+<meta property="og:description" content="PE结构是windows的可执行文件结构，学习PE结构有助于为后面的软件安全的学习打下基础。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://etranfire.github.io/images/APC%E6%B3%A8%E5%85%A5/image-20230912111408508.png">
-<meta property="og:image" content="https://etranfire.github.io/images/APC%E6%B3%A8%E5%85%A5/image-20230912111646582.png">
-<meta property="article:published_time" content="2023-09-12T01:37:17.000Z">
-<meta property="article:modified_time" content="2023-09-12T03:28:49.194Z">
+<meta property="og:image" content="https://etranfire.github.io/images/PE%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3/OIP-C.-9abkWaMsPlPnI87G8KPlgHaG8w=205&h=192&c=7&r=0&o=5&dpr=1.5&pid=1.jpeg">
+<meta property="og:image" content="https://etranfire.github.io/images/PE%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2ZyZWVraW5nMTAx,size_16,color_FFFFFF,t_70.jpeg">
+<meta property="article:published_time" content="2023-10-23T11:08:33.000Z">
+<meta property="article:modified_time" content="2023-10-23T12:59:37.826Z">
 <meta property="article:author" content="Etranfire">
-<meta property="article:tag" content="免杀">
+<meta property="article:tag" content="Windows">
+<meta property="article:tag" content="基础知识">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://etranfire.github.io/images/APC%E6%B3%A8%E5%85%A5/image-20230912111408508.png">
+<meta name="twitter:image" content="https://etranfire.github.io/images/PE%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3/OIP-C.-9abkWaMsPlPnI87G8KPlgHaG8w=205&h=192&c=7&r=0&o=5&dpr=1.5&pid=1.jpeg">
 
 
 
@@ -123,13 +124,13 @@
 
 
 
-  <link rel="canonical" href="https://Etranfire.github.io/2023/09/12/APC注入/"/>
+  <link rel="canonical" href="https://Etranfire.github.io/2023/10/23/PE结构详解/"/>
 
 
 
 
 
-  <title>APC注入 | Etranfire's blog</title>
+  <title>PE结构详解 | Etranfire's blog</title>
   
 
 
@@ -300,7 +301,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://Etranfire.github.io/2023/09/12/APC%E6%B3%A8%E5%85%A5/">
+    <link itemprop="mainEntityOfPage" href="https://Etranfire.github.io/2023/10/23/PE%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -317,7 +318,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">APC注入</h1>
+          <h1 class="post-title" itemprop="name headline">PE结构详解</h1>
         
 
         <div class="post-meta">
@@ -329,8 +330,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2023-09-12T09:37:17+08:00">
-                2023-09-12
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2023-10-23T19:08:33+08:00">
+                2023-10-23
               </time>
             
 
@@ -352,8 +353,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%85%8D%E6%9D%80%E5%9F%BA%E7%A1%80/" itemprop="url" rel="index">
-                    <span itemprop="name">免杀基础</span>
+                  <a href="/categories/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" itemprop="url" rel="index">
+                    <span itemprop="name">基础知识</span>
                   </a>
                 </span>
 
@@ -394,64 +395,159 @@
       
 
       
-        <p>APC即异步过程调用，是指函数在特定线程中被异步执行，在操作系统中，APC是一种并发机制。由于线程是不能被杀掉，挂起，恢复的，线程在执行时会占据CPU，而APC注入可以改变一个线程的行为，可用于DLL注入。</p>
+        <p>PE结构是windows的可执行文件结构，学习PE结构有助于为后面的软件安全的学习打下基础。</p>
 <span id="more"></span>
 
-<h1 id="一、APC机制"><a href="#一、APC机制" class="headerlink" title="一、APC机制"></a>一、APC机制</h1><h2 id="1-1APC调用的条件"><a href="#1-1APC调用的条件" class="headerlink" title="1.1APC调用的条件"></a>1.1APC调用的条件</h2><p>​		往线程APC队列添加APC，系统会产生一个软中断。在线程下一次被调度的时候，就会执行APC函数，APC有两种形式，由系统产生的APC称为内核模式APC，由应用程序产生的APC被称为用户模式APC。这里介绍一下应用程序的APC，APC是往线程中插入一个回调函数,但是用的APC调用这个回调函数是有条</p>
-<p>件的。</p>
-<p>​		当用户模式 APC 排队时，它排队的线程不会被定向到调用 APC 函数，除非它处于可警告状态。线程在调用SleepEx、SignalObjectAndWait，MsgWaitForMultipleObjectsEx、WaitForMultipleObjectsEx或WaitForSingleObjectEx函数时进入可警告状态。如果在 APC 排队之前等待满足，则线程不再处于可警告等待状态，因此不会执行 APC 函数。但是，APC 仍在排队，因此当线程调用另一个可警告的等待函数时，APC 函数将被执行。</p>
-<h2 id="1-2QueueUserAPC函数"><a href="#1-2QueueUserAPC函数" class="headerlink" title="1.2QueueUserAPC函数"></a>1.2QueueUserAPC函数</h2><p>QueueUserAPC用于添加制定的异步函数调用(回调函数)到执行的线程的APC队列中。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">DWORD QueueUserAPC( PAPCFUNCpfnAPC, // APC function,执行函数地址</span><br><span class="line">					HANDLEhThread, // handle to thread，插入APC的线程句柄，句柄必须包含THREAD_SET_CONTEXT 访问权限。</span><br><span class="line">                    ULONG_PTRdwData // APC function parameter，第三个参数表示传递给执行函数的参数</span><br><span class="line">                    );</span><br></pre></td></tr></table></figure>
+<h1 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h1><p>(1)EXE和DLL文件之间的区别完全是语义上的，因为他们使用完全相同的PE格式。而唯一的区别就是用结构中的一个字段标识出这个文件是EXE还是DLL文件。</p>
+<p>(2)64位Windows只是对PE格式做了简单的修饰，新格式叫PE32+。并没有将新的结构加进去，改变的只是简单的将32位字段扩展成64位。</p>
+<p>(3)PE格式定义的主要地方位于头文件“winnt.h”。</p>
+<p>(4)PE文件中的数据结构一般有32位和64位之分，一般在名称上会表现出来：如IMAGE_NT_HEADER32或者IMAGE_NT_HEADER64.</p>
+<p>(5)PE结构的简略图如下两张</p>
+<p><img src="/images/PE%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3/OIP-C.-9abkWaMsPlPnI87G8KPlgHaG8w=205&h=192&c=7&r=0&o=5&dpr=1.5&pid=1.jpeg" alt="PE结构图 的图像结果"></p>
+<p>详细的图：</p>
+<p><img src="/images/PE%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2ZyZWVraW5nMTAx,size_16,color_FFFFFF,t_70.jpeg" alt="PE文件结构详解 --（完整版）_pe文件节的个数_擒贼先擒王的博客-CSDN博客"></p>
+<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>(1)PE文件使用的是一个平面地址空间，所i有代码和数据都被合并在一起，组成一个很大的结构。</p>
+<p>(2)文件的内容被分割成不同的区块，块中包含代码或数据。各个按页边界来对齐，区块没有大小限制，是一个连续的结构。</p>
+<p>(3)此外，每个块有自己在内存中的一套属性，比如说这个区块是否包含代码，是否只读或可读可写等。</p>
+<p><strong>(4)PE文件不是作为单一内存映射文件被装入内存。</strong></p>
+<p>(5)Windows加载器(又称PE加载器)遍历PE文件并决定文件的哪一部分被映射，这种映射方式是将文件较高的偏移位置映射到较高的内存地址中。</p>
+<p>(6)当磁盘文件被装入内存中，磁盘上的数据结构布局和内存中的数据结构布局是一致的。</p>
+<p>(7)数据之间的相对位置可能改变。</p>
+<p>(8)几个重要概念</p>
+<p>​	<strong>基地址(ImageBase)：PE结构的头地址。</strong></p>
+<p>​	<strong>相对虚拟地址(RVA)：每一个区块的地址相对于基地址的偏移。</strong></p>
+<p>​	<strong>虚拟地址(VA)：内存中各个区块所在的地址</strong></p>
+<p>​	<strong>文件的偏移地址:PE文件存放在磁盘中的时候，PE结构各个块的首地址相对于文件头地址的偏移。</strong></p>
+<h1 id="MS-DOS头部"><a href="#MS-DOS头部" class="headerlink" title="MS-DOS头部"></a>MS-DOS头部</h1><p>每个PE文件是以一个DOS程序开始的，有了它，一旦程序在DOS下执行，DOs才能识别出这是一个有效的执行体。PE文件的第一个字节起始于一个传统的MS-DOS头部，被称为<code>IMAGE_DOS_HEADER</code>.结构定义如下，<strong>主要关注第一个和最后一个</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">IMAGE_DOS_HEADER STRUCT</span><br><span class="line">&#123;</span><br><span class="line">	+0hWORDe_magic //Magic DOS signature MZ(4Dh 5Ah)     DOS可执行文件标记</span><br><span class="line">	+2h WORDe_cblp//Bytes on last page of file  </span><br><span class="line">	+4hWORDe_cp//Pages in file</span><br><span class="line">	+6hWORD e_crlc//Relocations</span><br><span class="line">	+8hWORDe_cparhdr   //Size of header in paragraphs</span><br><span class="line">	+0ahWORD e_minalloc  //Minimun extra paragraphs needs</span><br><span class="line">	+0chWORDe_maxalloc  //Maximun extra paragraphs needs</span><br><span class="line">	+0ehWORDe_ss  //intial(relative)SS value     DOS代码的初始化堆栈SS</span><br><span class="line">	+10hWORDe_sp  //intial SP value              DOS代码的初始化堆栈指针SP</span><br><span class="line">	+12hWORDe_csum  //Checksum</span><br><span class="line">	+14hWORDe_ip  //    intial IP value          DOS代码的初始化指令入口[指针IP]</span><br><span class="line">	+16hWORDe_cs  //intial(relative)CS value     DOS代码的初始堆栈入口</span><br><span class="line">	+18hWORDe_lfarlc  //File Address of relocation table</span><br><span class="line">	+1ahWORDe_ovno        //    Overlay number</span><br><span class="line">	+1chWORDe_res[4]  //Reserved words</span><br><span class="line">	+24hWORDe_oemid  //    OEM identifier(for e_oeminfo)</span><br><span class="line">	+26hWORD      e_oeminfo   //    OEM information;e_oemid specific </span><br><span class="line">	+29hWORDe_res2[10]   //    Reserved words</span><br><span class="line">	+3chDWORD   e_lfanew     //Offset to start of PE header         指向PE文件头</span><br><span class="line">&#125; IMAGE_DOS_HEADER ENDS</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<h2 id="1-3APC队列"><a href="#1-3APC队列" class="headerlink" title="1.3APC队列"></a>1.3APC队列</h2><p>APC是针对具体线程，由具体线程加以执行的，所以每个线程都有自己的APC队列。内核中代表着线程的数据结构是ETHREAD，而ETHREAD中的第一个成分Tcb 是KTHREAD数据结构，线程的APC队列就在KTHREAD里面。</p>
-<p>KTHREAD + 0x34 处是一个 _KAPC_STATE 结构：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kd&gt; dt _KTHREAD</span><br><span class="line">...</span><br><span class="line">+0x034 ApcState         : _KAPC_STATE</span><br></pre></td></tr></table></figure>
+<h1 id="PE文件头-PE-Header"><a href="#PE文件头-PE-Header" class="headerlink" title="PE文件头(PE Header)"></a>PE文件头(PE Header)</h1><p>PE文件头紧挨着DOS stub，是PE相关结构NT映像头(IMAGE_NT_HEADER)的简称，里面包含着许多PE装载器用到的重要字段。执行体在支持PE文件结构的操作系统中执行时，PE装载器将从IMAGE_DOS_HEADER结构中的e_lfanew字段里找到PE Header的真实偏移量，加上基地址就得到PE文件头的指针。PNTHeader&#x3D;ImageBase+dosHeader-&gt;e_lfanew。结构体的定义如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">typedef struct _IMAGE_NT_HEADERS &#123;</span><br><span class="line">  DWORD                 Signature;</span><br><span class="line">  IMAGE_FILE_HEADER     FileHeader;</span><br><span class="line">  IMAGE_OPTIONAL_HEADER OptionalHeader;</span><br><span class="line">&#125; IMAGE_NT_HEADERS, *PIMAGE_NT_HEADERS;</span><br></pre></td></tr></table></figure>
 
-<p>_KAPC_STATE的结构如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">kd&gt; dt _KAPC_STATE </span><br><span class="line">nt!_KAPC_STATE </span><br><span class="line">+0x000 ApcListHead //2个APC队列 用户APC和内核APC</span><br><span class="line">+0x010 Process //线程所属或者所挂靠的进程</span><br><span class="line">+0x014 KernelApcInProgress //内核APC是否正在执行</span><br><span class="line">+0x015 KernelApcPending //是否有正在等待执行的内核APC</span><br><span class="line">+0x016 UserApcPending //是否有正在等待执行的用户APC</span><br><span class="line"></span><br><span class="line">用户APC：APC函数地址位于用户空间，在用户空间执行</span><br><span class="line"></span><br><span class="line">内核APC：APC函数地址位于内核空间，在内核空间执行（分为NormalRoutine为NULL的SpecialKernelApc和不为NULL的NormalKernelApc。SpecialKernelApc只执行KernelRoutine，IRQL为APC_LEVEL，而NormalKernelApc不仅仅执行 KernelRoutine还执行NormalRoutine，在PASSIVE_LEVEL下执行NormalRoutine。）</span><br></pre></td></tr></table></figure>
+<h2 id="Signature字段"><a href="#Signature字段" class="headerlink" title="Signature字段"></a>Signature字段</h2><p>第一个参数是一个标志。在一个有效的PE文件里， Signature字段被设置为 00004550h, ASCI|| 字符码是： PE00。标志着PE文件的开头。</p>
+<h2 id="IMAGE-FILE-HEADER"><a href="#IMAGE-FILE-HEADER" class="headerlink" title="IMAGE_FILE_HEADER"></a>IMAGE_FILE_HEADER</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">typedef     struct _IMAGE_FILE_HEADER </span><br><span class="line">&#123;</span><br><span class="line">	+04h    WORD        Machine;              // 运行平台</span><br><span class="line">	+06h    WORD        NumberOfSections;     // 文件的区块数目</span><br><span class="line">	+08h    DWORD       TimeDateStamp;        // 文件创建日期和时间</span><br><span class="line">	+0Ch    DWORD       PointerToSymbolTable; // 指向符号表(主要用于调试)</span><br><span class="line">	+10h    DWORD       NumberOfSymbols;      // 符号表中符号个数(同上)</span><br><span class="line">	+14h    WORD        SizeOfOptionalHeader; // IMAGE_OPTIONAL_HEADER32 结构大小</span><br><span class="line">	+16h    WORD        Characteristics;      // 文件属性</span><br><span class="line">&#125; IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;</span><br></pre></td></tr></table></figure>
 
-<p>NormalRoutine 会找到你提供的APC函数，并不完全等于APC函数的地址。</p>
-<h2 id="1-4APC函数执行流程"><a href="#1-4APC函数执行流程" class="headerlink" title="1.4APC函数执行流程"></a>1.4APC函数执行流程</h2><h3 id="1-4-1相关函数"><a href="#1-4-1相关函数" class="headerlink" title="1.4.1相关函数"></a>1.4.1相关函数</h3><p>KiServiceExit函数：这个函数是系统调用、异常或中断返回用户空间的必经之路。</p>
-<p>KiDeliverApc函数：负责执行APC函数</p>
-<h3 id="1-4-2QueueUserApc"><a href="#1-4-2QueueUserApc" class="headerlink" title="1.4.2QueueUserApc"></a>1.4.2QueueUserApc</h3><p>(1)通过3环的QueueUserApc函数可以完成将APC插入到队列的操作，首先调用了 ntdll.dll 的 NtQueueApcThread。</p>
-<p>(2)然后通过 0xB4 的调用号进入ring0。在windbg里面对应的内核函数为 NtQueueApcThread。</p>
-<p>(3)然后在 ntosknl.exe 里面定位到 NtQueueApcThread.</p>
-<p>(4)最后是调用 KeInitializeApc(对KAPC结构体进行初始化) 和 KeInsertQueueApc 这两个函数来实现APC的效果。</p>
-<h3 id="1-4-3用户APC"><a href="#1-4-3用户APC" class="headerlink" title="1.4.3用户APC"></a>1.4.3用户APC</h3><p>当产生系统调用、中断或者异常，线程在返回用户空间前都会调用 KiServiceExit 函数，在KiServiceExit 会判断是否有要执行的用户APC，如果有则调用KiDeliverApc 函数(第一个参数为1)进行处理。涉及的换栈操作如下：</p>
-<p>（1）当线程从用户层进入内核层时，要保留原来的运行环境，比如各种寄存器，栈的位置等等( _Trap_Frame )，然后切换成内核的堆栈，如果正常返回，恢复堆栈环境即可。用来保存原始环境的数据结构为SavedApcState。</p>
-<p>（2）但如果有用户APC要执行的话，就意味着线程要提前返回到用户空间去执行，而且返回的位置不是线程进入内核时的位置，而是返回到其他的位置，每处理一个用户APC都会涉及到：内核–&gt;用户空间–&gt;再回到内核空间。</p>
-<p>线程进0环时，原来的运行环境(寄存器栈顶等)保存到 _Trap_Frame 结构体中，如果要提前返回3环去处理用户APC，就必须要修改 _Trap_Frame 结构体。处理完APC后该如何返回原来的位置？</p>
-<p>KiInitializeUserApc 要做的第一件事就是备份，将原来 _Trap_Frame 的值备份到一个新的结构体中( CONTEXT )，这个功能由其子函数KeContextFromKframes 来完成。具体操作如下:</p>
-<p>1.首先判断参数是否为1，当参数为1的时候处理用户APC。再判断Apcstate.UserApcPending是否为1，为1则有用户APC要执行。</p>
-<p>2.将ApcState.UserApcPending设置为0.</p>
-<p>3.链表操作，将当前APC从用户队列中移除。</p>
-<p>4.调用函数(KAPC.KernelRoutine)释放KAPC结构内存空间</p>
-<p>5.转到 KiInitializeUserApc 函数，将 CONTEXT 和 TrapFrame 传入 KeContextFromKframes</p>
-<p>6.当windows把 CONTEXT 结构复制到堆栈之后，准备用户层执行环境，首先修改SS、DS、ES、FS、GS和EFLAGS寄存器</p>
-<p>7.然后修改esp到3环堆栈</p>
-<p>8.然后修改eip，这里永远返回一个固定的位置，但是这个位置在每次系统启动的时候都不相同，存放在3环的 ntdll 里的 KiUserApcDispatcher 参数里面</p>
-<p>9.然后到ntdll里面定位到 KiUserApcDispatcher ，首先得到指向 CONTEXT 结构的指针，然后 pop eax 得 到 NormalRoutine 结构，这里当APC是内核APC的时候存储的是真正的APC地址，当APC是用户APC的时候存储的是指向用户APC的总入口。当我们调用 QueueUserAPC ，并没有指定 NormalRoutine 结构，只指定了 NormalContext 和 SystemArgument1 ，那么这个参数在 QueueUserAPC 内部指定，在 kernel32.dll 的 BaseDispatchAPC ，用来调用真正的用户APC函数。</p>
-<p>10.调用ZwContinue 。</p>
-<p>（1）返回内核，如果还有用户APC，重复上面的执行过程。 </p>
-<p>（2）如果没有需要执行的用户APC，会将CONTEXT赋值给Trap_Frame结构体。就像从来没有修改过一样。 ZwContinue后面的代码不会执行，线程从哪里进0环仍然会从哪里回去。</p>
-<p>11.使用 0x20 的调用号利用调用门回到0环。</p>
-<h1 id="二、apc注入"><a href="#二、apc注入" class="headerlink" title="二、apc注入"></a>二、apc注入</h1><h2 id="2-1步骤"><a href="#2-1步骤" class="headerlink" title="2.1步骤"></a>2.1步骤</h2><p>1.当EXE里某个线程执行到SleepEx()或者WaitForSingleObjectEx()时，系统就会产生一个软中断（或者是Messagebox弹窗的时候不点OK的时候也能注入）。</p>
-<p>2.当线程再次被唤醒时，此线程会首先执行APC队列中的被注册的函数。</p>
-<p>3.利用QueueUserAPC()这个API可以在软中断时向线程的APC队列插入一个函数指针，如果我们插入的是Loadlibrary()执行函数的话，就能达到注入DLL的目的。</p>
-<p>在整个执行过程中，线程并无任何异常举动，不容易被察觉，但缺点是对于单线程程序一般不存在挂起状态，所以APC注入对于这类程序没有明显效果。</p>
-<h2 id="2-2流程"><a href="#2-2流程" class="headerlink" title="2.2流程"></a>2.2流程</h2><p>1.OpenProcess 打开进程</p>
-<p>2.VirtualAlloc 申请空间</p>
-<p>3.WriteProcessMemory 写入dll信息</p>
-<p>4.根据进程对应的线程id打开线程</p>
-<p>5.使用 QueueUserApc 插入执行</p>
-<h2 id="2-3代码实现"><a href="#2-3代码实现" class="headerlink" title="2.3代码实现"></a>2.3代码实现</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;iostream&gt;</span><br><span class="line">#include&lt;Windows.h&gt;</span><br><span class="line">#include&lt;TlHelp32.h&gt;</span><br><span class="line">#include&lt;tchar.h&gt;</span><br><span class="line"></span><br><span class="line">//提权函数</span><br><span class="line">BOOL EnableDebugPrivilege() &#123;</span><br><span class="line">	HANDLE hToken;</span><br><span class="line">	BOOL fok = FALSE;</span><br><span class="line">	if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &amp;hToken)) &#123;</span><br><span class="line">		TOKEN_PRIVILEGES tp;</span><br><span class="line">		tp.PrivilegeCount = 1;</span><br><span class="line">		LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &amp;tp.Privileges[0].Luid);</span><br><span class="line">		tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;</span><br><span class="line">		AdjustTokenPrivileges(hToken, FALSE, &amp;tp, sizeof(tp), NULL, NULL);</span><br><span class="line">		fok = (GetLastError() == ERROR_SUCCESS);</span><br><span class="line">		CloseHandle(hToken);</span><br><span class="line">	&#125;</span><br><span class="line">	return fok;</span><br><span class="line">&#125;</span><br><span class="line">BOOL APCInjectDLL(DWORD dwPid, char* pszDllName) &#123;</span><br><span class="line">	EnableDebugPrivilege(); </span><br><span class="line">	//打开进程,获取进程句柄</span><br><span class="line">	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);</span><br><span class="line">	if (hProcess == NULL) &#123; return FALSE; &#125;</span><br><span class="line">	//向目标进程申请空间写入dll全路径 </span><br><span class="line">	int nSize = strlen(pszDllName);</span><br><span class="line">	LPVOID pDllAddr = VirtualAllocEx(hProcess, NULL, nSize, MEM_COMMIT, PAGE_READWRITE); </span><br><span class="line">	SIZE_T dwWrittenSize = 0; </span><br><span class="line">	WriteProcessMemory(hProcess, pDllAddr, pszDllName, nSize, &amp;dwWrittenSize); </span><br><span class="line">	//获取LoadLibraryA的地址</span><br><span class="line">	HMODULE hMod = GetModuleHandleA(&quot;kernel32.dll&quot;);</span><br><span class="line">	FARPROC pFuncAddr = GetProcAddress(hMod, &quot;LoadLibraryA&quot;); </span><br><span class="line">	//创建线程快照</span><br><span class="line">	THREADENTRY32 te = &#123; 0 &#125;; </span><br><span class="line">	te.dwSize = sizeof(te);</span><br><span class="line">	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, NULL);</span><br><span class="line">	if (hSnap == INVALID_HANDLE_VALUE) &#123; return FALSE; &#125;</span><br><span class="line">	DWORD dwRet = 0;</span><br><span class="line">	HANDLE hThread = NULL; </span><br><span class="line">	if (Thread32First(hSnap, &amp;te)) &#123; </span><br><span class="line">		do &#123;</span><br><span class="line">			if (te.th32OwnerProcessID == dwPid) &#123;</span><br><span class="line">				hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, te.th32ThreadID);</span><br><span class="line">				if (hThread) &#123;</span><br><span class="line">					dwRet = QueueUserAPC((PAPCFUNC)pFuncAddr, hThread, (ULONG_PTR)pDllAddr);</span><br><span class="line">					hThread = NULL;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; while (Thread32Next(hSnap, &amp;te));</span><br><span class="line">	&#125;</span><br><span class="line">	CloseHandle(hThread);</span><br><span class="line">	CloseHandle(hProcess); </span><br><span class="line">	CloseHandle(hSnap); </span><br><span class="line">	return TRUE;</span><br><span class="line">&#125;int main(int argc, char* argv[]) &#123; </span><br><span class="line">	if (argc == 3) &#123; </span><br><span class="line">		if (FALSE == APCInjectDLL((DWORD)_tstol(argv[1]), argv[2])) </span><br><span class="line">			printf(&quot;APCInject failed\n&quot;); else</span><br><span class="line">			printf(&quot;APCInject successfully\n&quot;); </span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		printf(&quot;\nUsage: %s &lt;PID&gt; &lt;Dllpath&gt;\n&quot;);</span><br><span class="line">		printf(&quot;Example: %s 520 C:\\test.dll\n&quot;); </span><br><span class="line">	&#125;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>将程序和要注入的dll放入虚拟机。在cmd中使用tasklist命令查看进程id。</p>
-<p><img src="/images/APC%E6%B3%A8%E5%85%A5/image-20230912111408508.png" alt="image-20230912111408508"></p>
-<p>找到一个OneDrive.exe,PID为5776</p>
-<p>输入命令注入，结果如图：</p>
-<p><img src="/images/APC%E6%B3%A8%E5%85%A5/image-20230912111646582.png" alt="image-20230912111646582"></p>
-<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>本篇简单介绍了apc注入的基本概念和流程，如果有哪里讲述不对的地还望各位大佬赐教。</p>
+<h3 id="1-Machine"><a href="#1-Machine" class="headerlink" title="(1)Machine"></a>(1)<strong>Machine</strong></h3><p>可执行文件的目标CPU类型。</p>
+<table>
+<thead>
+<tr>
+<th>code</th>
+<th>Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IMAGE_FILE_MACHINE_I386</td>
+<td>0x014c</td>
+<td>x86</td>
+</tr>
+<tr>
+<td>IMAGE_FILE_MACHINE_IA64</td>
+<td>0x0200</td>
+<td>Intel Itanium</td>
+</tr>
+<tr>
+<td>IMAGE_FILE_MACHINE_AMD64</td>
+<td>0x8664</td>
+<td>x64</td>
+</tr>
+</tbody></table>
+<h3 id="2-NumberOfSections"><a href="#2-NumberOfSections" class="headerlink" title="(2)NumberOfSections"></a>(2)NumberOfSections</h3><p>区块的数目。（注：区块表是紧跟在 IMAGE_NT_HEADERS 后边的）</p>
+<h3 id="3-TimeDateStamp"><a href="#3-TimeDateStamp" class="headerlink" title="(3)TimeDateStamp"></a>(3)TimeDateStamp</h3><p>表明文件是何时被创建的。这个值是自1970年1月1日以来用格林威治时间（GMT）计算的秒数，这个值是比文件系统（FILESYSTEM）的日期时间更加精确的指示器。</p>
+<h3 id="4-PointerToSymbolTable"><a href="#4-PointerToSymbolTable" class="headerlink" title="(4)PointerToSymbolTable"></a>(4)<strong>PointerToSymbolTable</strong></h3><p> COFF 符号表的文件偏移位置，现在基本没用了。</p>
+<h3 id="5-NumberOfSymbols"><a href="#5-NumberOfSymbols" class="headerlink" title="(5)NumberOfSymbols"></a>(5)<strong>NumberOfSymbols</strong></h3><p>如果有COFF 符号表，它代表其中的符号数目，COFF符号是一个大小固定的结构，如果想找到COFF 符号表的结束位置，则需要这个变量。</p>
+<h3 id="6-SizeOfOptionalHeader"><a href="#6-SizeOfOptionalHeader" class="headerlink" title="(6)SizeOfOptionalHeader"></a>(6)<strong>SizeOfOptionalHeader</strong></h3><p>紧跟着IMAGE_FILE_HEADER 后边的数据结构（IMAGE_OPTIONAL_HEADER）的大小。(对于32位PE文件，这个值通常是00E0h；对于64位PE32+文件，这个值是00F0h )。</p>
+<h3 id="7-Characteristics"><a href="#7-Characteristics" class="headerlink" title="(7)Characteristics"></a>(7)<strong>Characteristics</strong></h3><p>文件属性，有选择的通过几个值可以运算得到。( 这些标志的有效值是定义于 winnt.h 内的 IMAGE_FILE_** 的值，具体含义见下表。普通的EXE文件这个字段的值一般是 0100h，DLL文件这个字段的值一般是 210Eh。)</p>
+<table>
+<thead>
+<tr>
+<th>数据位</th>
+<th><strong>常量符号</strong></th>
+<th><strong>为1的含义</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>IMAGE_ FILE_ RELOCS STRIPPED</td>
+<td>文件中不存在重定位信息</td>
+</tr>
+<tr>
+<td>1</td>
+<td>IMAGE_ FILE_ EXECUTABLE_ IMAGE</td>
+<td>文件是可执行的</td>
+</tr>
+<tr>
+<td>2</td>
+<td>IMAGE_ FILE_ LINE NUMS_STRIPPED</td>
+<td>不存在行信息</td>
+</tr>
+<tr>
+<td>3</td>
+<td>IMAGE_ FILE_ LOCAL. SYMS_ STRIPPED</td>
+<td>不存在符号信息</td>
+</tr>
+<tr>
+<td>4</td>
+<td>IMAGE_ FILE_ AGGRESSIVE_ Ws_ TRIM</td>
+<td>调整工作集</td>
+</tr>
+<tr>
+<td>5</td>
+<td>IMAGE_ FILE_ LARGE_ ADDRESS _AWARE</td>
+<td>应用程序可处理大于2GB的地址</td>
+</tr>
+<tr>
+<td>6</td>
+<td></td>
+<td>此标志保留</td>
+</tr>
+<tr>
+<td>7</td>
+<td>IMAGE_FILE_BYTES_REVERSED_LO</td>
+<td>小尾方式</td>
+</tr>
+<tr>
+<td>8</td>
+<td>IMAGE_ FILE_ <em>32BIT</em> _MACHINE</td>
+<td>只在32位平台上运行</td>
+</tr>
+<tr>
+<td>9</td>
+<td>IMAGE_ FILE_ DEBUG STRIPPED</td>
+<td>不包含调试信息</td>
+</tr>
+<tr>
+<td>10</td>
+<td>IMAGE_ FILE_ REMOVABLE RUN_ FROM_ SWAP</td>
+<td>不能从可移动盘运行</td>
+</tr>
+<tr>
+<td>11</td>
+<td>IMAGE_ FILE NET_ RUN_ FROM_SWAP</td>
+<td>不能从网络运行</td>
+</tr>
+<tr>
+<td>12</td>
+<td>IMAGE_ FILE_ SYSTEM</td>
+<td>系统文件(如驱动程序)，不能直接运行</td>
+</tr>
+<tr>
+<td>13</td>
+<td>IMAGE_ FILE_ DLL</td>
+<td>这是一个DLL文件</td>
+</tr>
+<tr>
+<td>14</td>
+<td>IMAGE_ FILE_ UP_ SYSTEM_ONLY</td>
+<td>文件不能在多处理器计算机上运行</td>
+</tr>
+<tr>
+<td>15</td>
+<td>IMAGE_ FILE_BYTES_ REVERSED_ HI</td>
+<td>大尾方式</td>
+</tr>
+</tbody></table>
+<p>多种属性可以通过 “或运算” 使得同时拥有。</p>
 
       
     </div>
@@ -469,7 +565,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/%E5%85%8D%E6%9D%80/" rel="tag"># 免杀</a>
+            <a href="/tags/Windows/" rel="tag"># Windows</a>
+          
+            <a href="/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" rel="tag"># 基础知识</a>
           
         </div>
       
@@ -482,8 +580,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2023/08/31/dll%E6%B3%A8%E5%85%A5%E4%B8%8Esession0%E6%B3%A8%E5%85%A5/" rel="next" title="dll注入与session0注入">
-                <i class="fa fa-chevron-left"></i> dll注入与session0注入
+              <a href="/2023/10/16/%E5%88%9D%E8%AF%95SSDT-hook/" rel="next" title="初试SSDT hook">
+                <i class="fa fa-chevron-left"></i> 初试SSDT hook
               </a>
             
           </div>
@@ -491,10 +589,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2023/09/22/%E8%BF%9B%E7%A8%8B%E9%9A%90%E8%97%8F%E4%B8%8E%E5%BC%BA%E6%9D%80/" rel="prev" title="进程隐藏与强杀">
-                进程隐藏与强杀 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -632,7 +726,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E3%80%81APC%E6%9C%BA%E5%88%B6"><span class="nav-number">1.</span> <span class="nav-text">一、APC机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1APC%E8%B0%83%E7%94%A8%E7%9A%84%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.1.</span> <span class="nav-text">1.1APC调用的条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2QueueUserAPC%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.</span> <span class="nav-text">1.2QueueUserAPC函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3APC%E9%98%9F%E5%88%97"><span class="nav-number">1.3.</span> <span class="nav-text">1.3APC队列</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4APC%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="nav-number">1.4.</span> <span class="nav-text">1.4APC函数执行流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-1%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0"><span class="nav-number">1.4.1.</span> <span class="nav-text">1.4.1相关函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-2QueueUserApc"><span class="nav-number">1.4.2.</span> <span class="nav-text">1.4.2QueueUserApc</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-3%E7%94%A8%E6%88%B7APC"><span class="nav-number">1.4.3.</span> <span class="nav-text">1.4.3用户APC</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C%E3%80%81apc%E6%B3%A8%E5%85%A5"><span class="nav-number">2.</span> <span class="nav-text">二、apc注入</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1%E6%AD%A5%E9%AA%A4"><span class="nav-number">2.1.</span> <span class="nav-text">2.1步骤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2%E6%B5%81%E7%A8%8B"><span class="nav-number">2.2.</span> <span class="nav-text">2.2流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.3.</span> <span class="nav-text">2.3代码实现</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">3.</span> <span class="nav-text">结语</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text">前置知识</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">1.1.</span> <span class="nav-text">基本概念</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MS-DOS%E5%A4%B4%E9%83%A8"><span class="nav-number">2.</span> <span class="nav-text">MS-DOS头部</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#PE%E6%96%87%E4%BB%B6%E5%A4%B4-PE-Header"><span class="nav-number">3.</span> <span class="nav-text">PE文件头(PE Header)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Signature%E5%AD%97%E6%AE%B5"><span class="nav-number">3.1.</span> <span class="nav-text">Signature字段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IMAGE-FILE-HEADER"><span class="nav-number">3.2.</span> <span class="nav-text">IMAGE_FILE_HEADER</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Machine"><span class="nav-number">3.2.1.</span> <span class="nav-text">(1)Machine</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-NumberOfSections"><span class="nav-number">3.2.2.</span> <span class="nav-text">(2)NumberOfSections</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-TimeDateStamp"><span class="nav-number">3.2.3.</span> <span class="nav-text">(3)TimeDateStamp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-PointerToSymbolTable"><span class="nav-number">3.2.4.</span> <span class="nav-text">(4)PointerToSymbolTable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-NumberOfSymbols"><span class="nav-number">3.2.5.</span> <span class="nav-text">(5)NumberOfSymbols</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-SizeOfOptionalHeader"><span class="nav-number">3.2.6.</span> <span class="nav-text">(6)SizeOfOptionalHeader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-Characteristics"><span class="nav-number">3.2.7.</span> <span class="nav-text">(7)Characteristics</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
