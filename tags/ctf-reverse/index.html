@@ -134,8 +134,7 @@
 <meta name="generator" content="Hexo 6.3.0"></head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
-<div class="bg_content">
-<canvas id="canvas">
+
   
   
     
@@ -953,7 +952,8 @@
 
   
 
- 
+ <div class="bg_content">
+<canvas id="canvas">
   </canvas>
 </div>
 
@@ -971,3 +971,12 @@
   POWERMODE.shake = false; 
   document.body.addEventListener('input', POWERMODE);
 </script>
+<style>
+copy.bg_content {
+  position: fixed;
+  top: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+}
+</style>
