@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="-ctf -reverse," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="​	angr是一个基于符号执行与模拟执行的二进制框架。它专注于静态和符号分析，使其适用于各种任务。他寄生于2层环境中，第一层为angr环境，是一个利用virtualenvwrapper软件模拟出来的python环境，用于解决环境的不兼容问题， 第二层是真实的python环境。本篇就是对最近它的学习做个总结。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初步探究angr与ctf">
+<meta property="og:url" content="https://etranfire.github.io/2023/11/04/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/index.html">
+<meta property="og:site_name" content="Etranfire&#39;s blog">
+<meta property="og:description" content="​	angr是一个基于符号执行与模拟执行的二进制框架。它专注于静态和符号分析，使其适用于各种任务。他寄生于2层环境中，第一层为angr环境，是一个利用virtualenvwrapper软件模拟出来的python环境，用于解决环境的不兼容问题， 第二层是真实的python环境。本篇就是对最近它的学习做个总结。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231104153043662.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106170222675.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106170236116.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106162539483.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106162335844.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106164922069.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106170603108.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106170615497.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106174410462.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106181735253.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106193220795.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106193307492.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106195819829.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106203842871.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106204801482.png">
+<meta property="og:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106210333869.png">
+<meta property="article:published_time" content="2023-11-04T06:22:11.000Z">
+<meta property="article:modified_time" content="2024-04-07T11:15:52.417Z">
+<meta property="article:author" content="Etranfire">
+<meta property="article:tag" content="-ctf -reverse">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://etranfire.github.io/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231104153043662.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://Etranfire.github.io/2023/11/04/初步探究angr与ctf/"/>
+
+
+
+
+
+  <title>初步探究angr与ctf | Etranfire's blog</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+<div class="bg_content">
+  <canvas id="canvas"></canvas>
+</div>
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Etranfire's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">该博客仅用来记录日常在IT技术中的探索。</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            Search
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="Searching..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://Etranfire.github.io/2023/11/04/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar_2.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Etranfire's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">初步探究angr与ctf</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2023-11-04T14:22:11+08:00">
+                2023-11-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ctf/" itemprop="url" rel="index">
+                    <span itemprop="name">ctf</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i> 浏览
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>​	angr是一个基于符号执行与模拟执行的二进制框架。它专注于静态和符号分析，使其适用于各种任务。他寄生于2层环境中，第一层为angr环境，是一个利用virtualenvwrapper软件模拟出来的python环境，用于解决环境的不兼容问题， 第二层是真实的python环境。本篇就是对最近它的学习做个总结。</p>
+<span id="more"></span>
+
+<h1 id="符号执行"><a href="#符号执行" class="headerlink" title="符号执行"></a>符号执行</h1><p>符号执行就是在运行程序时用符号来替代真实值。符号执行相较于真实值执行的优点在于，当时用符号执行程序时，可以遍历的程序路径只有一条，而使用符号进行执行时，由于符号是可变的，我们就可以利用这一特性，尽可能多的将程序每一条路径遍历，这样必定存在至少一条能够输出正确结果的分支，每一条分支的结果都可以表示为一个离散关系式，使用约束求解引擎即可分析出正确结果。但这也反映出使用angr存在<strong>路径爆炸</strong>的问题。</p>
+<h1 id="使用angr的步骤"><a href="#使用angr的步骤" class="headerlink" title="使用angr的步骤"></a>使用angr的步骤</h1><p>使用angr不关心文件算法的加密逻辑，只需知道它的开头(想要程序在哪进行)跟结尾(要程序走到哪条路径)即可。</p>
+<p>(1)创建project</p>
+<p>(2)设置state</p>
+<p>(3)新建符号量:BVS(bitvector symbolic)或BVV(bitvector value)</p>
+<p>(4)把符号量设置到内存或者其他地方。</p>
+<p>(5)设置Simulation Managers，进行路径探索的对象。</p>
+<p>(6)运行，探索满足路径需要的值</p>
+<p>(7)约束求解，获取执行结果。</p>
+<h1 id="基本对象"><a href="#基本对象" class="headerlink" title="基本对象"></a>基本对象</h1><h2 id="Project对象"><a href="#Project对象" class="headerlink" title="Project对象"></a>Project对象</h2><p>载入二进制文件使用angr.Project函数，它的第一个参数是待载入文件的路径。</p>
+<p>auto_load_libs设置为false使脚本不在动态连接程序使用的库中进行查找。同时 angr 使用 python 实现了很多的库函数（保存在 angr.SIM_PROCEDURES 里面），默认情况下会使用列表内部的函数来替换实际的函数调用，如果不在列表内才会进入到真正的 library。load-options指明加载的方式，如下：</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>描述</th>
+<th>传入参数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>auto_load_libs</td>
+<td>是否自动加载程序的依赖</td>
+<td>布尔</td>
+</tr>
+<tr>
+<td>skip_libs</td>
+<td>希望避免加载的库</td>
+<td>库名</td>
+</tr>
+<tr>
+<td>except_missing_libs</td>
+<td>无法解析库时是否抛出异常</td>
+<td>布尔</td>
+</tr>
+<tr>
+<td>force_load_libs</td>
+<td>强制加载的库</td>
+<td>库名</td>
+</tr>
+<tr>
+<td>id_path</td>
+<td>共享库的优先搜索路径</td>
+<td>路径名</td>
+</tr>
+</tbody></table>
+<h2 id="SimState对象"><a href="#SimState对象" class="headerlink" title="SimState对象"></a>SimState对象</h2><p>这个对象保存着程序运行到某一阶段的状态信息。通过这个对象可以操作某一运行状态的上下文信息，比如内存，寄存器等。预设状态有四种方式如下：</p>
+<table>
+<thead>
+<tr>
+<th>预设状态方式</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>entry_state</td>
+<td>初始化状态为程序运行到程序入口处的状态</td>
+</tr>
+<tr>
+<td>blank_state(addr&#x3D;)</td>
+<td>大多数数据没有初始化，状态下一条指令为addr处的命令</td>
+</tr>
+<tr>
+<td>full_init_state</td>
+<td>共享库和预定义内容已经加载完毕</td>
+</tr>
+<tr>
+<td>call_state</td>
+<td>准备调用函数</td>
+</tr>
+</tbody></table>
+<h2 id="SimulationManager对象"><a href="#SimulationManager对象" class="headerlink" title="SimulationManager对象"></a>SimulationManager对象</h2><p>这个对象用于具体的路径探索。下面的一个代码创建一个SimulationManager，他需要传入一个state或者state的列表作为参数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">si  = p.factory.simgr(state)</span><br></pre></td></tr></table></figure>
+
+<p>SimulationManager中有许多列表，这些列表被称为stash，它保存处于某种状态的state，stash有如下几种：</p>
+<table>
+<thead>
+<tr>
+<th>stash</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>active</td>
+<td>保存接下来可以执行并且将要执行的状态</td>
+</tr>
+<tr>
+<td>deadended</td>
+<td>由于某些原因不能继续执行的状态</td>
+</tr>
+<tr>
+<td>pruned</td>
+<td>与solve的策略有关，当发现一个不可解的节点后，其后面所有的节点都优化掉放在pruned里</td>
+</tr>
+<tr>
+<td>unconstrained</td>
+<td>如果创建SimulationManager时启用了save_unconstrained,则被认定为不受约束的state会放在这，不受约束的state是指用户数据或者符号控制的指针。</td>
+</tr>
+<tr>
+<td>unsat</td>
+<td>认为不可满足的state会放在这里。</td>
+</tr>
+</tbody></table>
+<p>默认情况下，state会被存放在active中。stash中的state可以通过move()方法来转移，将<strong>fulter_func</strong>筛选出来的state从from_stash转移到to_stash。在stash名字前加上one_，可以得到stash中的第一个状态，加上mp_，可以得到一个mulpyplexed版本的stash。可以通过step()方法来让处于active的state执行一个基本块，这种操作不会改变state本身。</p>
+<p>可以使用explorer方法去执行某个状态，直到找到目标指令或者active中没有状态为止，它有如下参数：</p>
+<ul>
+<li>find：传入目标指令的地址或地址列表，或者一个用于判断的函数，函数以state为形参，返回布尔值</li>
+<li>avoid：传入要避免的指令的地址或地址列表，或者一个用于判断的函数，用于减少路径</li>
+</ul>
+<p>此外还有一些搜索策略，之后会集中讲解，默认使用DFS（深度优先搜索）。</p>
+<p>explorer找到的符合find的状态会被保存在simgr.found这个列表当中，可以遍历其中元素获取状态。</p>
+<h1 id="angr-ctf项目"><a href="#angr-ctf项目" class="headerlink" title="angr_ctf项目"></a>angr_ctf项目</h1><p>GitHub上的一个项目，dist放置的是二进制文件，与dist同目录的各个小项目放置的是c源码，和作者的解析代码以及答案。</p>
+<h2 id="00-angr-find"><a href="#00-angr-find" class="headerlink" title="00_angr_find"></a>00_angr_find</h2><p>进入ida反编译窗口如下：</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231104153043662.png" alt="image-20231104153043662"></p>
+<p>该程序是从标准输入中接收一个字符串，然后通过complex_function进行加密。最终加密成的字符串为“JACEJGCS”。因此我们可以编写如下脚本</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">p=angr.Project(&#x27;/home/ubuntu/桌面/00_angr_find&#x27;,auto_load_libs=False)</span><br><span class="line">st=p.factory.entry_state()</span><br><span class="line">sm=p.factory.simgr(st)</span><br><span class="line">sm.explore(find=0x8048675)//&quot;Good Job.&quot;所在模块地址</span><br><span class="line">if sm.found:</span><br><span class="line">    sm=sm.found[0]</span><br><span class="line">    print(sm.posix.dumps(0))</span><br></pre></td></tr></table></figure>
+
+<p>posix.dumps()的作用如下：</p>
+<ul>
+<li>state.posix.dumps(0):表示到达当前状态所对应的程序输入</li>
+<li>state.posix.dumps(1):表示到达当前状态所对应的程序输出</li>
+</ul>
+<h2 id="01-angr-avoid"><a href="#01-angr-avoid" class="headerlink" title="01_angr_avoid"></a>01_angr_avoid</h2><p>打开该程序发现反编译出来异常庞大。但是仔细观察后发现是因为多次调用<code>avoid_me()</code>,所以要避免这个函数。代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">p=angr.Project(&#x27;/home/ubuntu/桌面/01_angr_avoid&#x27;,auto_load_libs=False)</span><br><span class="line">st=p.factory.entry_state()</span><br><span class="line">sm=p.factory.simgr(st)</span><br><span class="line">sm.explore(find=0x080485e5,avoid=0x080485A8)</span><br><span class="line">if sm.found:</span><br><span class="line">    sm=sm.found[0]</span><br><span class="line">    print(sm.posix.dumps(0))</span><br></pre></td></tr></table></figure>
+
+<h2 id="02-angr-find-condition"><a href="#02-angr-find-condition" class="headerlink" title="02_angr_find_condition"></a>02_angr_find_condition</h2><p>这个就是<code>&quot;Good Job.&quot;</code>跟<code>&quot;Try again.&quot;</code>的次数比较多，所以要筛选出所有的<code>&quot;Try again.&quot;</code>跟<code>&quot;Good Job.&quot;</code>。具体代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">p=angr.Project(&#x27;/home/ubuntu/桌面/tmp/02_angr_find_condition&#x27;,auto_load_libs=False)</span><br><span class="line">st=p.factory.entry_state()</span><br><span class="line">sm=p.factory.simgr(st)</span><br><span class="line">def good(state):</span><br><span class="line">    tag=b&#x27;Good&#x27; in state.posix.dumps(1)</span><br><span class="line">    return True if tag else False</span><br><span class="line">def bad(state):</span><br><span class="line">    tag=b&#x27;Try&#x27; in state.posix.dumps(1)</span><br><span class="line">    return True if tag else False</span><br><span class="line">sm.explore(find=good,avoid=bad)</span><br><span class="line">if sm.found:</span><br><span class="line">    sm=sm.found[0]</span><br><span class="line">    print(sm.posix.dumps(0))</span><br></pre></td></tr></table></figure>
+
+<h2 id="03-angr-symbolic-registers"><a href="#03-angr-symbolic-registers" class="headerlink" title="03_angr_symbolic_registers"></a>03_angr_symbolic_registers</h2><p><strong>符号化寄存器。</strong></p>
+<p>这里将开始地址设置为<code>call get_user_input</code>之后，用ida看出这里将输入的三个变量被依次放入eax, ebx, edx。所以直接将符号向量注入寄存器。</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106170222675.png" alt="image-20231106170222675"><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106170236116.png" alt="image-20231106170236116"></p>
+<p>solution_state.solver.eval(passwd0)返回的是passwd0的一个十进制解，用format将其16进制化。这里：</p>
+<p>solver.eval(expression)：将会解出expression一个可行解。<br>solver.eval_one(expression)：将会给出expression的可行解，若有多个可行解，则抛出异常。<br>solver.eval_upto(expression, n)：将会给出最多n个可行解，如果不足n个就给出所有的可行解。<br>solver.eval_exact(expression, n)：将会给出n个可行解，如果解的个数不等于n个，将会抛出异常。<br>solver.min(expression)：将会给出最小可行解。<br>solver.max(expression)：将会给出最大可行解。</p>
+<p>代码实现如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">import sys</span><br><span class="line">def is_successful(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Good Job.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def is_wrong(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Try again.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def Go():</span><br><span class="line">    path_to_binary=&#x27;/home/ubuntu/桌面/tmp/03_angr_symbolic_registers&#x27;</span><br><span class="line">    project=angr.Project(path_to_binary,auto_load_libs=False)</span><br><span class="line">    start_addr=0x08048980</span><br><span class="line">    initial_state=project.factory.blank_state(addr=start_addr)</span><br><span class="line">    passwd_size_in_bits=32</span><br><span class="line">    passwd0=claripy.BVS(&#x27;passwd0&#x27;,passwd_size_in_bits)</span><br><span class="line">    passwd1=claripy.BVS(&#x27;passwd1&#x27;,passwd_size_in_bits)</span><br><span class="line">    passwd2=claripy.BVS(&#x27;passwd2&#x27;,passwd_size_in_bits)</span><br><span class="line">    initial_state.regs.eax=passwd0</span><br><span class="line">    initial_state.regs.ebx=passwd1</span><br><span class="line">    initial_state.regs.edx=passwd2</span><br><span class="line">    sm=project.factory.simgr(initial_state)</span><br><span class="line">    sm.explore(find=is_successful,avoid=is_wrong)</span><br><span class="line">    if sm.found:</span><br><span class="line">        for i in sm.found:</span><br><span class="line">            solution_state=i</span><br><span class="line">            solution0=format(solution_state.solver.eval(passwd0),&#x27;x&#x27;)</span><br><span class="line">            solution1=format(solution_state.solver.eval(passwd1),&#x27;x&#x27;)</span><br><span class="line">            solution2=format(solution_state.solver.eval(passwd2),&#x27;x&#x27;)</span><br><span class="line">            solution=solution0+&quot; &quot;+solution1+&quot; &quot;+solution2</span><br><span class="line">            print(&quot;[+]Success! Solution is: &#123;&#125;&quot;.format(solution))</span><br><span class="line">    else:</span><br><span class="line">        raise Exception(&quot;Could not find the solution&quot;)</span><br><span class="line">if __name__==&#x27;__main__&#x27;:</span><br><span class="line">    Go()</span><br></pre></td></tr></table></figure>
+
+<h2 id="04-angr-symbolic-stack"><a href="#04-angr-symbolic-stack" class="headerlink" title="04_angr_symbolic_stack"></a>04_angr_symbolic_stack</h2><p>符号化栈区</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106162539483.png" alt="image-20231106162539483"></p>
+<p>这里v1和v2是栈上的参数。所以可以用angr初始化栈区。不用寄存器初始化的原因是因为这里直接将参数进行了处理。</p>
+<p>解密脚本为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">import sys</span><br><span class="line">def is_successful(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Good Job.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def is_wrong(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Try again.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def Go():</span><br><span class="line">    path_to_binary=&#x27;/home/ubuntu/桌面/tmp/04_angr_symbolic_stack&#x27;</span><br><span class="line">    project=angr.Project(path_to_binary,auto_load_libs=False)</span><br><span class="line">    start_addr=0x08048697#标准输入之后</span><br><span class="line">    initial_state=project.factory.blank_state(addr=start_addr)</span><br><span class="line">    passwd_size_in_bits=32</span><br><span class="line">    passwd0=claripy.BVS(&#x27;passwd0&#x27;,passwd_size_in_bits)</span><br><span class="line">    passwd1=claripy.BVS(&#x27;passwd1&#x27;,passwd_size_in_bits)</span><br><span class="line">    initial_state.regs.ebp=initial_state.regs.esp//平衡堆栈</span><br><span class="line">    padding_length_in_bytes=0x8</span><br><span class="line">    initial_state.regs.esp-=padding_length_in_bytes</span><br><span class="line">    initial_state.stack_push(passwd0)</span><br><span class="line">    initial_state.stack_push(passwd1)</span><br><span class="line">    sm=project.factory.simgr(initial_state)</span><br><span class="line">    sm.explore(find=is_successful,avoid=is_wrong)</span><br><span class="line">    if sm.found:</span><br><span class="line">        for i in sm.found:</span><br><span class="line">            solution_state=i</span><br><span class="line">            solution0=solution_state.solver.eval(passwd0)</span><br><span class="line">            solution1=solution_state.solver.eval(passwd1)</span><br><span class="line">            solution=solution0+&quot; &quot;+solution1</span><br><span class="line">            print(&quot;[+]Success! Solution is: &#123;&#125;&quot;.format(solution))</span><br><span class="line">    else:</span><br><span class="line">        raise Exception(&quot;Could not find the solution&quot;)</span><br><span class="line">if __name__==&#x27;__main__&#x27;:</span><br><span class="line">    Go()</span><br></pre></td></tr></table></figure>
+
+<p>这里注入的是栈空间位置，所以开始状态设置为输入数据之后，即<code>0x8048697</code>处。</p>
+<p>堆栈的符号化是<code>push</code>而不是直接数组下标访问赋值的，所以需要先平衡（<code>initial_state.regs.ebp = initial_state.regs.esp</code>）。linux下栈是从高到低增长的，esp &lt; ebp。</p>
+<p>v1和v2共8个字节需要padding，所以有<code>padding_length_in_bytes = 0x8</code>和<code>initial_state.regs.esp -= padding_length_in_bytes</code>。</p>
+<h2 id="05-angr-symbolic-memory"><a href="#05-angr-symbolic-memory" class="headerlink" title="05_angr_symbolic_memory"></a>05_angr_symbolic_memory</h2><p>符号化.bss段</p>
+<p>ida反编译打开如下：</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106162335844.png" alt="image-20231106162335844"></p>
+<p>代码大致意思是输入分4段输入一个长度32的字符串，循环移位后对比。输入字符串位于.bss段(通常放置未输出化的全局变量)。</p>
+<p>这里仍然用scanf后的参数输入地址作为起点。解密脚本为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">import sys</span><br><span class="line">def is_successful(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Good Job.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def is_wrong(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Try again.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def Go():</span><br><span class="line">    path_to_binary=&#x27;/home/ubuntu/桌面/tmp/05_angr_symbolic_memory&#x27;</span><br><span class="line">    project=angr.Project(path_to_binary,auto_load_libs=False)</span><br><span class="line">    start_addr=0x8048601</span><br><span class="line">    initial_state=project.factory.blank_state(addr=start_addr)</span><br><span class="line">    passwd_size_in_bits=64</span><br><span class="line">    passwd0=claripy.BVS(&#x27;passwd0&#x27;,passwd_size_in_bits)</span><br><span class="line">    passwd1=claripy.BVS(&#x27;passwd1&#x27;,passwd_size_in_bits)</span><br><span class="line">    passwd2=claripy.BVS(&#x27;passwd2&#x27;,passwd_size_in_bits)</span><br><span class="line">    passwd3=claripy.BVS(&#x27;passwd3&#x27;,passwd_size_in_bits)</span><br><span class="line">    passwd0_address=0x0a1ba1c0#user_input的地址</span><br><span class="line">    initial_state.memory.store(passwd0_address,passwd0)</span><br><span class="line">    initial_state.memory.store(passwd0_address+0x8,passwd1)</span><br><span class="line">    initial_state.memory.store(passwd0_address+0x10,passwd2)</span><br><span class="line">    initial_state.memory.store(passwd0_address+0x18,passwd3)</span><br><span class="line">    sm=project.factory.simgr(initial_state)</span><br><span class="line">    sm.explore(find=is_successful,avoid=is_wrong)</span><br><span class="line">    if sm.found:</span><br><span class="line">        for i in sm.found:</span><br><span class="line">            solution_state=i</span><br><span class="line">            solution0=solution_state.solver.eval(passwd0,cast_to=bytes)</span><br><span class="line">            solution1=solution_state.solver.eval(passwd1,cast_to=bytes)</span><br><span class="line">            solution2=solution_state.solver.eval(passwd2,cast_to=bytes)</span><br><span class="line">            solution3=solution_state.solver.eval(passwd3,cast_to=bytes)</span><br><span class="line">            solution=solution0+b&quot; &quot;+solution1+b&quot; &quot;+solution2+b&quot; &quot;+solution3</span><br><span class="line">            print(&quot;[+]Success! Solution is: &#123;&#125;&quot;.format(solution))</span><br><span class="line">    else:</span><br><span class="line">        raise Exception(&quot;Could not find the solution&quot;)</span><br><span class="line">if __name__==&#x27;__main__&#x27;:</span><br><span class="line">    Go()</span><br></pre></td></tr></table></figure>
+
+<p><code>state.memory.store</code>和<code>state.memory.load</code>，可以用来访问一段连续的内存。一般 <code>.load(addr, size)</code> 和 <code>.store(addr, val)</code>。</p>
+<h2 id="06-angr-symbolic-dynamic-memory"><a href="#06-angr-symbolic-dynamic-memory" class="headerlink" title="06_angr_symbolic_dynamic_memory"></a>06_angr_symbolic_dynamic_memory</h2><p>堆内存的符号化。</p>
+<p>ida反编译代码如下，可以看出buffer0和buffer1是动态申请的，存放在堆中。</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106164922069.png" alt="image-20231106164922069"></p>
+<p>代码实现如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">import sys</span><br><span class="line">def is_successful(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Good Job.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def is_wrong(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Try again.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def Go():</span><br><span class="line">    path_to_binary=&#x27;/home/ubuntu/桌面/tmp/06_angr_symbolic_dynamic_memory&#x27;</span><br><span class="line">    project=angr.Project(path_to_binary,auto_load_libs=False)</span><br><span class="line">    start_addr=0x8048699</span><br><span class="line">    initial_state=project.factory.blank_state(addr=start_addr)</span><br><span class="line">    passwd_size_in_bits=64</span><br><span class="line">    passwd0=claripy.BVS(&#x27;passwd0&#x27;,passwd_size_in_bits)</span><br><span class="line">    passwd1=claripy.BVS(&#x27;passwd1&#x27;,passwd_size_in_bits)</span><br><span class="line">    fake_heap_address0=0xffffabcd</span><br><span class="line">    fake_heap_address1=0xffffbdac</span><br><span class="line">    pointer_to_malloc_memory_address0= 0xabcc8a4</span><br><span class="line">    pointer_to_malloc_memory_address1= 0xabcc8ac</span><br><span class="line">    initial_state.memory.store(pointer_to_malloc_memory_address0, fake_heap_address0,endness=project.arch.memory_endness)</span><br><span class="line">    initial_state.memory.store(pointer_to_malloc_memory_address1, fake_heap_address1,endness=project.arch.memory_endness)</span><br><span class="line">    initial_state.memory.store(fake_heap_address0, passwd0)</span><br><span class="line">    initial_state.memory.store(fake_heap_address1, passwd1)</span><br><span class="line">    sm=project.factory.simgr(initial_state)</span><br><span class="line">    sm.explore(find=is_successful,avoid=is_wrong)</span><br><span class="line">    if sm.found:</span><br><span class="line">        for i in sm.found:</span><br><span class="line">            solution_state=i</span><br><span class="line">            solution0=solution_state.solver.eval(passwd0,cast_to=bytes)</span><br><span class="line">            solution1=solution_state.solver.eval(passwd1,cast_to=bytes)</span><br><span class="line">            solution=solution0+b&quot; &quot;+solution1</span><br><span class="line">            print(&quot;[+]Success! Solution is: &#123;&#125;&quot;.format(solution))</span><br><span class="line">    else:</span><br><span class="line">        raise Exception(&quot;Could not find the solution&quot;)</span><br><span class="line">if __name__==&#x27;__main__&#x27;:</span><br><span class="line">    Go()</span><br></pre></td></tr></table></figure>
+
+<p><code>buffer0</code>和<code>buffer1</code>属于全局变量，因此在bss段。IDA查看其地址分别为0xabcc8a4和0xabcc8ac。</p>
+<p><code>buffer0</code>和<code>buffer1</code>存储的是申请到的堆内存地址，angr并没有真正“运行”二进制文件，它只是在模拟运行状态，因此它实际上不需要将内存分配到堆中，实际上可以伪造任何地址。而需要使用者做的就是选择两个地址存放的堆区地址，<code>buffer0</code>和<code>buffer1</code>就是可选项。<code>0xffffabcd</code>和<code>0xffffbdac</code>是随机伪造的地址。</p>
+<p><code>.store</code>参数<code>endness</code> 用于设置端序，angr默认为大端序，总共可选的值如下：</p>
+<ul>
+<li><code>LE</code> – 小端序</li>
+<li><code>BE</code> – 大端序</li>
+<li><code>ME</code> – 中间序</li>
+</ul>
+<p>实际内存和angr模拟内存对照如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">before:</span><br><span class="line">buffer0 -&gt; malloc()ed address 0 -&gt; string 0</span><br><span class="line">buffer1 -&gt; malloc()ed address 1 -&gt; string 1</span><br><span class="line"></span><br><span class="line">after:</span><br><span class="line">buffer0 -&gt; fake address 0 -&gt; symbolic bitvector 0</span><br><span class="line">buffer1 -&gt; fake address 1 -&gt; symbolic bitvector 1</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="07-angr-symbolic-file"><a href="#07-angr-symbolic-file" class="headerlink" title="07_angr_symbolic_file"></a>07_angr_symbolic_file</h2><p>反编译窗口如下：</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106170603108.png" alt="image-20231106170603108"></p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106170615497.png" alt="image-20231106170615497"></p>
+<p>程序使用<code>fread</code>函数从文件中读取字符串并加密。<code>ignore_me</code> 主要是把第一个读取的内容存入OJKSQYDP.txt。</p>
+<p>这里用到了仿真文件系统-The Emulated Filesystem。在angr中与文件系统，套接字，管道或终端的任何交互的根源都是SimFile对象。可以从某个位置读取文件，可以在某个位置写入文件，可以询问文件中当前存储了多少字节，还可以具体化文件，并为其生成测试用例。</p>
+<p>利用<code>SimFile</code>形成符号化的文件的格式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">simgr_file = angr.storage.SimFile(filename, content=xxxxxx, size=file_size)</span><br></pre></td></tr></table></figure>
+
+<p>然后利用<code>fs</code>选项以文件名的字典来预配置<code>SimFile</code>对象，也可以<code>fs.insert</code>是将文件插入到文件系统中，需要文件名与符号化的文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">initial_state.fs.insert(filename, simgr_file)</span><br></pre></td></tr></table></figure>
+
+<p>具体代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">import sys</span><br><span class="line">def is_successful(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Good Job.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def is_wrong(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Try again.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def Go():</span><br><span class="line">    path_to_binary=&#x27;/home/ubuntu/桌面/tmp/07_angr_symbolic_file&#x27;</span><br><span class="line">    project=angr.Project(path_to_binary,auto_load_libs=False)</span><br><span class="line">    start_addr=0x080488EA</span><br><span class="line">    initial_state=project.factory.blank_state(addr=start_addr)</span><br><span class="line">    file_name=&#x27;OJKSQYDP.txt&#x27;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    symbolic_file_bytes=64</span><br><span class="line">    passwd0=claripy.BVS(&#x27;passwd0&#x27;,symbolic_file_bytes*8)</span><br><span class="line">    			passwd_file=angr.storage.SimFile(file_name,content=passwd0,size=symbolic_file_bytes)</span><br><span class="line">    initial_state.fs.insert(file_name,passwd_file)</span><br><span class="line">    sm=project.factory.simgr(initial_state)</span><br><span class="line">    sm.explore(find=is_successful,avoid=is_wrong)</span><br><span class="line">    if sm.found:</span><br><span class="line">        for i in sm.found:</span><br><span class="line">            solution_state=i</span><br><span class="line">            solution0=solution_state.solver.eval(passwd0,cast_to=bytes)</span><br><span class="line">            print(&quot;[+]Success! Solution is: &#123;&#125;&quot;.format(solution0))</span><br><span class="line">    else:</span><br><span class="line">        raise Exception(&quot;Could not find the solution&quot;)</span><br><span class="line">if __name__==&#x27;__main__&#x27;:</span><br><span class="line">    Go()</span><br></pre></td></tr></table></figure>
+
+<h2 id="08-angr-constraints"><a href="#08-angr-constraints" class="headerlink" title="08_angr_constraints"></a>08_angr_constraints</h2><p>老规矩，继续用ida反编译</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106174410462.png" alt="image-20231106174410462"></p>
+<p>main函数调用scanf读取16字节的字符串输入至缓冲区buffer，然后调用<code>complex_function</code>函数对输入进行处理。最后调用<code>check_equals_AUPDNNPROEZRJWKB</code>完成逐字符的字符串比较，并根据结果相应输出。</p>
+<p>这题主要是给出一个方法解决路径爆炸。当程序执行到<code>check_equals_AUPDNNPROEZRJWKB</code>时增加一个约束。实现代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">import sys</span><br><span class="line">def is_successful(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Good Job.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def is_wrong(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Try again.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def Go():</span><br><span class="line">    path_to_binary=&#x27;/home/ubuntu/桌面/tmp/08_angr_constraints&#x27;</span><br><span class="line">    project=angr.Project(path_to_binary,auto_load_libs=False)</span><br><span class="line">    start_addr=0x08048565</span><br><span class="line">    initial_state=project.factory.blank_state(addr=start_addr)</span><br><span class="line">    check_addr=0x08048565</span><br><span class="line">    buffer_addr=0x0804A050</span><br><span class="line">    passwd0=claripy.BVS(&#x27;passwd0&#x27;,16*8)</span><br><span class="line">    initial_state.memory.store(buffer_addr,passwd0)</span><br><span class="line">    sm=project.factory.simgr(initial_state)</span><br><span class="line">    sm.explore(find=check_addr,avoid=is_wrong)</span><br><span class="line">    if sm.found:</span><br><span class="line">        for i in sm.found:</span><br><span class="line">            solution_state=i</span><br><span class="line">            desired_string=&quot;AUPDNNPROEZRJWKB&quot;</span><br><span class="line">            check_param1=buffer_addr</span><br><span class="line">            check_param2=0x10</span><br><span class="line">            check_bvs=i.memory.load(check_param1,check_param2)#取出check_equals_AUPDNNPROEZRJWKB的两个参数</span><br><span class="line">            solution_state.add_constraints(check_bvs==desired_string)</span><br><span class="line">            solution0=solution_state.solver.eval(passwd0,cast_to=bytes)</span><br><span class="line">            print(&quot;[+]Success! Solution is: &#123;&#125;&quot;.format(solution0))</span><br><span class="line">    else:</span><br><span class="line">        raise Exception(&quot;Could not find the solution&quot;)</span><br><span class="line">if __name__==&#x27;__main__&#x27;:</span><br><span class="line">    Go()</span><br></pre></td></tr></table></figure>
+
+<h2 id="09-angr-hooks"><a href="#09-angr-hooks" class="headerlink" title="09_angr_hooks"></a>09_angr_hooks</h2><p>用ida静态分析</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106181735253.png" alt="image-20231106181735253"></p>
+<p>首先读取一个16字符的字符串至缓冲区buffer中，之后调用complex_function函数对buffer中的内容进行逐字符处理，最后将处理后的buffer中的内容与password缓冲区中的字符串进行比较。</p>
+<p>再次读取一个16字符的字符串至缓冲区buffer中，之后调用complex_function函数对password中的内容进行逐字符处理，最后将处理后的password中的内容与buffer中的字符串进行比较。</p>
+<p>解题代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import sys</span><br><span class="line">import claripy</span><br><span class="line"></span><br><span class="line">def is_successful(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Good Job.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def is_bad(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Try again.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def main():</span><br><span class="line">    project=angr.Project(&#x27;/home/ubuntu/桌面/tmp/09_angr_hooks&#x27;,auto_load_libs=False)</span><br><span class="line">    init_state=project.factory.entry_state()</span><br><span class="line"></span><br><span class="line">    check_addr=0x080486B3#call check_equals_XYMKBKUHNIQYNQXE的地址</span><br><span class="line">    check_skip_size=0x5#call check_equals_XYMKBKUHNIQYNQXE的长度</span><br><span class="line">    @project.hook(check_addr,length=check_skip_size)</span><br><span class="line">    def check_hook(state):</span><br><span class="line">        user_input_addr=0x0804A054</span><br><span class="line">        user_input_size=0x10</span><br><span class="line">        user_input_bvs=state.memory.load(user_input_addr,user_input_size)</span><br><span class="line">        desired_string=&quot;XYMKBKUHNIQYNQXE&quot;</span><br><span class="line">        state.regs.eax=claripy.If(</span><br><span class="line">            user_input_bvs==desired_string,</span><br><span class="line">            claripy.BVV(1,32),</span><br><span class="line">            claripy.BVV(0,32)</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    sm=project.factory.simgr(init_state)</span><br><span class="line">    sm.explore(find=is_successful,avoid=is_bad)</span><br><span class="line">    if sm.found:</span><br><span class="line">        found_state=sm.found[0]</span><br><span class="line">        print(&quot;[+] solution is: &#123;&#125;&quot;.format(found_state.posix.dumps(0)))</span><br><span class="line">    else:</span><br><span class="line">        raise Exception(&quot;not found solution&quot;)</span><br><span class="line">if __name__==&#x27;__main__&#x27;:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<h2 id="10-angr-simprocedures"><a href="#10-angr-simprocedures" class="headerlink" title="10_angr_simprocedures"></a>10_angr_simprocedures</h2><p>用ida打开</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106193220795.png" alt="image-20231106193220795"></p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106193307492.png" alt="image-20231106193307492"></p>
+<p>可以发现对<code>check_equals_ORSDDWXHZURJRBDH</code>进行了大量的引用。因此与第9题不同，这次直接hook符号(函数名)。上代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import sys</span><br><span class="line">import claripy</span><br><span class="line"></span><br><span class="line">def is_successful(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Good Job.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def is_wrong(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Try again.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def main():</span><br><span class="line">    project=angr.Project(&#x27;/home/ubuntu/桌面/tmp/10_angr_simprocedures&#x27;,auto_load_libs=False)</span><br><span class="line"></span><br><span class="line">    init_state=project.factory.entry_state()</span><br><span class="line"></span><br><span class="line">    class mySimProcedure(angr.SimProcedure):</span><br><span class="line">        def run(self,buffer_addr,buffer_size):</span><br><span class="line">            bvs=self.state.memory.load(buffer_addr,buffer_size)</span><br><span class="line">            desired_string=&quot;ORSDDWXHZURJRBDH&quot;</span><br><span class="line">            return claripy.If(desired_string==bvs,claripy.BVV(1,32),claripy.BVV(0,32))</span><br><span class="line">    check_symbol=&quot;check_equals_ORSDDWXHZURJRBDH&quot;</span><br><span class="line">    project.hook_symbol(check_symbol,mySimProcedure())</span><br><span class="line">    sm=project.factory.simgr(init_state)</span><br><span class="line">    sm.explore(find=is_successful,avoid=is_wrong)</span><br><span class="line">    if sm.found:</span><br><span class="line">        for found_state in sm.found:</span><br><span class="line">            print(&quot;[+] solution is: &#123;&#125;&quot;.format(found_state.posix.dumps(0)))</span><br><span class="line">    else:</span><br><span class="line">        raise Exception(&quot;not found solution&quot;)</span><br><span class="line">if __name__==&#x27;__main__&#x27;:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<h2 id="11-angr-sim-scanf"><a href="#11-angr-sim-scanf" class="headerlink" title="11_angr_sim_scanf"></a>11_angr_sim_scanf</h2><p>用ida打开：</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106195819829.png" alt="image-20231106195819829"></p>
+<p>和上一题差不多，要求hook scanf</p>
+<p><strong>globals</strong>：</p>
+<p>在这里<code>buffer0</code>和<code>buffer1</code>是函数<code>mySimProcedure</code>的局部变量，为了让函数外部也能获得我们输入的符号位向量，从而调用求解器获得答案，需要将这两个符号位向量变为全局变量，这里我们需要调用带有全局状态的globals插件中“保存”对我们的符号值的引用。globals插件允许使用列表，元组或多个键的字典来存储多个位向量</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">import sys</span><br><span class="line">def is_successful(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Good Job.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def is_wrong(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Try again.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def main():</span><br><span class="line">    project=angr.Project(&#x27;/home/ubuntu/桌面/tmp/11_angr_sim_scanf&#x27;,auto_load_libs=False)</span><br><span class="line"></span><br><span class="line">    init_state=project.factory.entry_state()</span><br><span class="line">    class mySimProcedure(angr.SimProcedure):</span><br><span class="line">        def run(self,format_str,buffer0_addr,buffer1_addr):</span><br><span class="line">            buffer0=claripy.BVS(&#x27;buffer0&#x27;,32)</span><br><span class="line">            buffer1=claripy.BVS(&#x27;buffer1&#x27;,32)</span><br><span class="line">            self.state.memory.store(buffer0_addr,buffer0,endness=project.arch.memory_endness)</span><br><span class="line">            self.state.memory.store(buffer1_addr,buffer1,endness=project.arch.memory_endness)</span><br><span class="line">            self.state.globals[&#x27;solutions&#x27;]=(buffer0,buffer1)</span><br><span class="line">            return</span><br><span class="line">    sacnf_symbol=&quot;__isoc99_scanf&quot;</span><br><span class="line">    project.hook_symbol(sacnf_symbol,mySimProcedure())</span><br><span class="line">    sm=project.factory.simgr(init_state)</span><br><span class="line">    sm.explore(find=is_successful,avoid=is_wrong)</span><br><span class="line">    if sm.found:</span><br><span class="line">        for found_state in sm.found:</span><br><span class="line">            store_solutions=found_state.globals[&#x27;solutions&#x27;]</span><br><span class="line">            solution0=found_state.solver.eval(store_solutions[0])</span><br><span class="line">            solution1=found_state.solver.eval(store_solutions[1])</span><br><span class="line">            print(&quot;[+] solution is :&#123;&#125; &#123;&#125;&quot;.format(solution0,solution1))</span><br><span class="line">    else:</span><br><span class="line">        raise Exception(&quot;not found solutions&quot;)</span><br><span class="line">if __name__ == &#x27;__main__&#x27;:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<h2 id="12-angr-veritesting"><a href="#12-angr-veritesting" class="headerlink" title="12_angr_veritesting"></a>12_angr_veritesting</h2><p>veritesting的开启使得angr同时使用”动态符号执行” 和 “静态分析” 减少路径爆炸的影响，用ida看反编译代码：</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106203842871.png" alt="image-20231106203842871"></p>
+<p>main函数中调用scanf函数读取长度为32字节的字符串输入到起始地址为buffer[3]的内存空间中，逐个比较buffer[i + 3]和complex_function(75, i + 93)。解题代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">import sys</span><br><span class="line">def is_successful(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Good Job.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def is_wrong(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Try again.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def main():</span><br><span class="line">    project=angr.Project(&#x27;/home/ubuntu/桌面/tmp/12_angr_veritesting&#x27;,auto_load_libs=False)</span><br><span class="line">    init_state=project.factory.entry_state()</span><br><span class="line">    sm=project.factory.simgr(init_state,veritesting=True)</span><br><span class="line">    sm.explore(find=is_successful,avoid=is_wrong)</span><br><span class="line">    if sm.found:</span><br><span class="line">        for found_state in sm.found:</span><br><span class="line">            print(&quot;[+] solution is:&#123;&#125;&quot;.format(found_state.posix.dumps(0)))</span><br><span class="line">    else:</span><br><span class="line">        raise Exception(&quot;not found solution&quot;)</span><br><span class="line">if __name__==&#x27;__main__&#x27;:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<h2 id="13-angr-static-binary"><a href="#13-angr-static-binary" class="headerlink" title="13_angr_static_binary"></a>13_angr_static_binary</h2><p>用ida打开</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106204801482.png" alt="image-20231106204801482"></p>
+<p> 由于该程序是静态链接的，故对于scanf、printf、puts等函数，angr不会自动将其hook，替换成angr自己实现的函数，而是进行符号执行。为了避免路径爆炸和过多的开销，可以手动hook。解题代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">import sys</span><br><span class="line">def is_successful(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Good Job.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def is_wrong(state):</span><br><span class="line">    stdout_output=state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">    tag=b&#x27;Try again.&#x27; in stdout_output</span><br><span class="line">    return True if tag else False</span><br><span class="line">def main():</span><br><span class="line">    project=angr.Project(&#x27;/home/ubuntu/桌面/tmp/13_angr_static_binary&#x27;,auto_load_libs=False)</span><br><span class="line">    init_state=project.factory.entry_state()</span><br><span class="line">    printf_addr=0x0804ED40</span><br><span class="line">    scanf_addr=0x0804ED80</span><br><span class="line">    puts_addr=0x0804F350</span><br><span class="line">    strcmp_addr=0x0805B450</span><br><span class="line">    libc_start_main_addr=0x08048D10</span><br><span class="line"></span><br><span class="line">    project.hook(printf_addr, angr.SIM_PROCEDURES[&#x27;libc&#x27;][&#x27;printf&#x27;]())</span><br><span class="line">    project.hook(scanf_addr, angr.SIM_PROCEDURES[&#x27;libc&#x27;][&#x27;scanf&#x27;]())</span><br><span class="line">    project.hook(puts_addr, angr.SIM_PROCEDURES[&#x27;libc&#x27;][&#x27;puts&#x27;]())</span><br><span class="line">    project.hook(strcmp_addr, angr.SIM_PROCEDURES[&#x27;libc&#x27;][&#x27;strcmp&#x27;]())</span><br><span class="line">    project.hook(libc_start_main_addr, angr.SIM_PROCEDURES[&#x27;glibc&#x27;][&#x27;__libc_start_main&#x27;]())</span><br><span class="line">    sm=project.factory.simgr(init_state)</span><br><span class="line">    sm.explore(find=is_successful,avoid=is_wrong)</span><br><span class="line">    if sm.found:</span><br><span class="line">        found_state=sm.found[0]</span><br><span class="line">        print(&quot;[+]solution is:&#123;&#125;&quot;.format(found_state.posix.dumps(0)))</span><br><span class="line">    else:</span><br><span class="line">        raise Exception(&quot;not found solution&quot;)</span><br><span class="line">if __name__ == &#x27;__main__&#x27;:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="14-angr-shared-library"><a href="#14-angr-shared-library" class="headerlink" title="14_angr_shared_library"></a>14_angr_shared_library</h2><p>用ida打开：</p>
+<p><img src="/images/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/image-20231106210333869.png" alt="image-20231106210333869"></p>
+<p>函数逻辑简单，唯一不同的是validate函数在动态链接库（.so文件）中。动态链接库中的共享对象最终装载地址在编译的时候是不确定的。解题代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">import angr</span><br><span class="line">import claripy</span><br><span class="line">import sys</span><br><span class="line">def is_success(state):</span><br><span class="line">    return b&#x27;Good Job.&#x27; in state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">def is_bad(state):</span><br><span class="line">    return b&#x27;Try again.&#x27; in state.posix.dumps(sys.stdout.fileno())</span><br><span class="line">def main():</span><br><span class="line">    base_addr=0x08048000</span><br><span class="line">    project=angr.Project(&#x27;/home/ubuntu/桌面/tmp/lib14_angr_shared_library.so&#x27;,load_options=&#123;</span><br><span class="line">        &#x27;main_opts&#x27;:&#123;</span><br><span class="line">            # backend —— 使用哪个后台，可以是一个对象，也可以是一个名字(字符串)</span><br><span class="line">			# custom_base_addr —— 使用的基地址</span><br><span class="line">			# custom_entry_point —— 使用的入口点</span><br><span class="line">			# custom_arch —— 使用的处理器体系结构的名字</span><br><span class="line">            &#x27;custom_base_addr&#x27;:base_addr</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">    # 初始化符号变量,0x30000000为缓冲区地址</span><br><span class="line">    sym_val=claripy.BVV(0x30000000,32)</span><br><span class="line">     #validate函数地址为base+0x6d7,lib14_angr_shared_library.so的地址不是14_angr_shared_library的</span><br><span class="line">    validate_function_address = base_addr+0x6d7</span><br><span class="line">    #因为需要比较的字符串长度为8，故利用BVV传入参数claripy.BVV(8,32)</span><br><span class="line">    init_state = project.factory.call_state(validate_function_address,sym_val,claripy.BVV(8,32))</span><br><span class="line">    passwd=claripy.BVS(&#x27;passwd&#x27;,8*8)</span><br><span class="line">    init_state.memory.store(sym_val,passwd)</span><br><span class="line">    sm=project.factory.simgr(init_state)</span><br><span class="line">    sm.explore(find=base_addr+0x783)</span><br><span class="line">    if sm.found:</span><br><span class="line">        found_state=sm.found[0]</span><br><span class="line">        found_state.add_constraints(found_state.regs.eax!=0)</span><br><span class="line">        print(&quot;[+] solution is:&#123;&#125;&quot;.format(found_state.solver.eval(passwd,cast_to=bytes)))</span><br><span class="line">    else:</span><br><span class="line">        raise Exception(&#x27;not found solution&#x27;)</span><br><span class="line">if __name__ ==&#x27;__main__&#x27;:</span><br><span class="line">    main()</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ctf-reverse/" rel="tag"># -ctf -reverse</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2023/10/25/reverse%E4%B8%8Epwn%E5%9F%BA%E7%A1%80/" rel="next" title="reverse与pwn基础">
+                <i class="fa fa-chevron-left"></i> reverse与pwn基础
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar_2.gif"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%A6%E5%8F%B7%E6%89%A7%E8%A1%8C"><span class="nav-number">1.</span> <span class="nav-text">符号执行</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8angr%E7%9A%84%E6%AD%A5%E9%AA%A4"><span class="nav-number">2.</span> <span class="nav-text">使用angr的步骤</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E5%AF%B9%E8%B1%A1"><span class="nav-number">3.</span> <span class="nav-text">基本对象</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Project%E5%AF%B9%E8%B1%A1"><span class="nav-number">3.1.</span> <span class="nav-text">Project对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SimState%E5%AF%B9%E8%B1%A1"><span class="nav-number">3.2.</span> <span class="nav-text">SimState对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SimulationManager%E5%AF%B9%E8%B1%A1"><span class="nav-number">3.3.</span> <span class="nav-text">SimulationManager对象</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#angr-ctf%E9%A1%B9%E7%9B%AE"><span class="nav-number">4.</span> <span class="nav-text">angr_ctf项目</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#00-angr-find"><span class="nav-number">4.1.</span> <span class="nav-text">00_angr_find</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#01-angr-avoid"><span class="nav-number">4.2.</span> <span class="nav-text">01_angr_avoid</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#02-angr-find-condition"><span class="nav-number">4.3.</span> <span class="nav-text">02_angr_find_condition</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#03-angr-symbolic-registers"><span class="nav-number">4.4.</span> <span class="nav-text">03_angr_symbolic_registers</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#04-angr-symbolic-stack"><span class="nav-number">4.5.</span> <span class="nav-text">04_angr_symbolic_stack</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#05-angr-symbolic-memory"><span class="nav-number">4.6.</span> <span class="nav-text">05_angr_symbolic_memory</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#06-angr-symbolic-dynamic-memory"><span class="nav-number">4.7.</span> <span class="nav-text">06_angr_symbolic_dynamic_memory</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#07-angr-symbolic-file"><span class="nav-number">4.8.</span> <span class="nav-text">07_angr_symbolic_file</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#08-angr-constraints"><span class="nav-number">4.9.</span> <span class="nav-text">08_angr_constraints</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#09-angr-hooks"><span class="nav-number">4.10.</span> <span class="nav-text">09_angr_hooks</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-angr-simprocedures"><span class="nav-number">4.11.</span> <span class="nav-text">10_angr_simprocedures</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-angr-sim-scanf"><span class="nav-number">4.12.</span> <span class="nav-text">11_angr_sim_scanf</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#12-angr-veritesting"><span class="nav-number">4.13.</span> <span class="nav-text">12_angr_veritesting</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#13-angr-static-binary"><span class="nav-number">4.14.</span> <span class="nav-text">13_angr_static_binary</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#14-angr-shared-library"><span class="nav-number">4.15.</span> <span class="nav-text">14_angr_shared_library</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">&copy; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Etranfire</span>
+<!--
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src=”https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i> 访问人数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i> 访问总量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+  <script src="/js/src/md5.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '31ed55c6748d7b28225e',
+          clientSecret: '45d1a22ad04b100d62d890a0834a9f867e02f785',
+          repo: 'gestbook',
+          owner: 'Etranfire',
+          admin: ['Etranfire'],
+          id: md5(), 
+          labels: ['Gitalk'],
+          perPage: 15,
+          pagerDirection: 'last',
+          createIssueManually: true,
+          distractionFreeMode: true
+        })
+        gitalk.render('gitalk-container')           
+    </script>
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
+<script type="text/javascript" src="/js/dynamic_bg.js"></script>
